@@ -1,0 +1,429 @@
+<svg width="6800" height="2400" viewBox="0 0 6800 2400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- FIGMA CANVAS BACKGROUND -->
+  <rect width="6800" height="2400" fill="#1E1E1E"/>
+
+  <defs>
+    <!-- Gradients -->
+    <radialGradient id="portalGradMaster" cx="20%" cy="20%" r="80%">
+      <stop offset="0%" stop-color="#064E3B"/>
+      <stop offset="35%" stop-color="#04382A"/>
+      <stop offset="75%" stop-color="#1F103A"/>
+      <stop offset="100%" stop-color="#0C0617"/>
+    </radialGradient>
+    <linearGradient id="wordmarkGradMaster" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#10B981"/>
+      <stop offset="50%" stop-color="#34D399"/>
+      <stop offset="100%" stop-color="#A78BFA"/>
+    </linearGradient>
+    <linearGradient id="brightGradMaster" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ECFDF5"/>
+      <stop offset="100%" stop-color="#F5F3FF"/>
+    </linearGradient>
+  </defs>
+
+  <!-- CANVAS HEADER -->
+  <text x="100" y="90" fill="#FFFFFF" font-family="Plus Jakarta Sans, sans-serif" font-size="36" font-weight="800">TUMIN · Master UI/UX Design Kit for Figma</text>
+  <text x="100" y="125" fill="#9CA3AF" font-family="Plus Jakarta Sans, sans-serif" font-size="16">Tino Underwear UMKM Integration (Mini ERP &amp; POS) · Bekasi, Jawa Barat</text>
+
+  <!-- ========================================================================= -->
+  <!-- FRAME 0: DESIGN SYSTEM & UI TOKENS (1200 x 950) -->
+  <!-- ========================================================================= -->
+  <g id="Frame_0_Design_Tokens" transform="translate(100, 200)">
+    <text x="0" y="-20" fill="#9CA3AF" font-family="JetBrains Mono, monospace" font-size="16" font-weight="bold"># 00_DESIGN_TOKENS_&amp;_COMPONENTS (1200 × 950)</text>
+    <rect width="1200" height="950" rx="16" fill="#FFFFFF" stroke="#3D3D3D" stroke-width="2"/>
+    
+    <!-- Title -->
+    <text x="60" y="70" fill="#10241D" font-family="Syne, sans-serif" font-size="32" font-weight="800">TUMIN Visual System &amp; Tokens</text>
+    <text x="60" y="100" fill="#4B6359" font-family="Plus Jakarta Sans, sans-serif" font-size="14">Konsep Desain: "Sewing Pattern, Futuristic" · Chamfered Panels, Dashed Stitch Lines</text>
+    
+    <!-- Color Swatches -->
+    <text x="60" y="150" fill="#10241D" font-family="Plus Jakarta Sans, sans-serif" font-size="18" font-weight="bold">Color Palette</text>
+    
+    <rect x="60" y="170" width="190" height="100" rx="8" fill="#047857"/>
+    <text x="75" y="295" fill="#10241D" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="bold">Primary Green</text>
+    <text x="75" y="315" fill="#4B6359" font-family="JetBrains Mono, monospace" font-size="12">#047857 (Buttons, Price)</text>
+
+    <rect x="280" y="170" width="190" height="100" rx="8" fill="#6D28D9"/>
+    <text x="295" y="295" fill="#10241D" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="bold">Secondary Violet</text>
+    <text x="295" y="315" fill="#4B6359" font-family="JetBrains Mono, monospace" font-size="12">#6D28D9 (Accents)</text>
+
+    <rect x="500" y="170" width="190" height="100" rx="8" fill="#A78BFA"/>
+    <text x="515" y="295" fill="#10241D" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="bold">Violet Light Accent</text>
+    <text x="515" y="315" fill="#4B6359" font-family="JetBrains Mono, monospace" font-size="12">#A78BFA (Tints)</text>
+
+    <rect x="720" y="170" width="190" height="100" rx="8" fill="#10241D"/>
+    <text x="735" y="295" fill="#10241D" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="bold">Text Primary</text>
+    <text x="735" y="315" fill="#4B6359" font-family="JetBrains Mono, monospace" font-size="12">#10241D (High-Contrast)</text>
+
+    <rect x="940" y="170" width="190" height="100" rx="8" fill="#4B6359"/>
+    <text x="955" y="295" fill="#10241D" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="bold">Muted Text</text>
+    <text x="955" y="315" fill="#4B6359" font-family="JetBrains Mono, monospace" font-size="12">#4B6359 (Subtitles)</text>
+
+    <!-- Status Badges -->
+    <text x="60" y="375" fill="#10241D" font-family="Plus Jakarta Sans, sans-serif" font-size="18" font-weight="bold">Status Pill Badges</text>
+    
+    <rect x="60" y="395" width="130" height="34" rx="17" fill="#D1FAE5" stroke="#6EE7B7" stroke-width="1"/>
+    <text x="90" y="417" fill="#065F46" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="600">Aman / Paid</text>
+
+    <rect x="210" y="395" width="140" height="34" rx="17" fill="#FEF3C7" stroke="#FCD34D" stroke-width="1"/>
+    <text x="235" y="417" fill="#92400E" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="600">Menipis / Partial</text>
+
+    <rect x="370" y="395" width="140" height="34" rx="17" fill="#FFE4E6" stroke="#FDA4AF" stroke-width="1"/>
+    <text x="395" y="417" fill="#9F1239" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="600">Habis / Unpaid</text>
+
+    <rect x="530" y="395" width="150" height="34" rx="17" fill="#EDE9FE" stroke="#C4B5FD" stroke-width="1"/>
+    <text x="555" y="417" fill="#5B21B6" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="600">Pending Approval</text>
+
+    <!-- Typography Scale -->
+    <text x="60" y="480" fill="#10241D" font-family="Plus Jakarta Sans, sans-serif" font-size="18" font-weight="bold">Typography Rules</text>
+    <text x="60" y="525" fill="#047857" font-family="Syne, sans-serif" font-size="40" font-weight="800">TUMIN (Wordmark Display)</text>
+    <text x="60" y="570" fill="#10241D" font-family="Plus Jakarta Sans, sans-serif" font-size="22" font-weight="700">Heading 1 — 22px Bold (Plus Jakarta Sans)</text>
+    <text x="60" y="610" fill="#10241D" font-family="Plus Jakarta Sans, sans-serif" font-size="15" font-weight="400">Body Text — 15px Regular (Line height 1.5 for optimal Indonesian prose readability)</text>
+    <text x="60" y="645" fill="#4B6359" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="500">Small Label / Microcopy — 13px Medium</text>
+    <text x="60" y="690" fill="#047857" font-family="JetBrains Mono, monospace" font-size="20" font-weight="700">Rp 1.450.000 (Tabular Numbers font-variant-numeric: tabular-nums)</text>
+
+    <!-- Component Patterns -->
+    <text x="60" y="750" fill="#10241D" font-family="Plus Jakarta Sans, sans-serif" font-size="18" font-weight="bold">Component Patterns (Sewing Motif)</text>
+    
+    <!-- Cut Corner Button -->
+    <path d="M 66 775 L 294 775 L 300 781 L 300 819 L 294 825 L 66 825 L 60 819 L 60 781 Z" fill="#047857"/>
+    <text x="95" y="805" fill="#FFFFFF" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="600">Cut-Corner Button (Chamfer)</text>
+
+    <!-- Dashed Tailor Bottom Border Input -->
+    <line x1="340" y1="820" x2="650" y2="820" stroke="#4B6359" stroke-width="2" stroke-dasharray="6 4"/>
+    <text x="340" y="805" fill="#10241D" font-family="Plus Jakarta Sans, sans-serif" font-size="14">Input Garis Bawah Putus-Putus...</text>
+
+    <!-- Stitched Divider -->
+    <line x1="700" y1="800" x2="1100" y2="800" stroke="#047857" stroke-width="1.5" stroke-dasharray="8 6"/>
+    <text x="700" y="785" fill="#4B6359" font-family="Plus Jakarta Sans, sans-serif" font-size="12">Garis Pembatas Jahitan (Dashed Stitch Divider)</text>
+  </g>
+
+  <!-- ========================================================================= -->
+  <!-- FRAME 1: SCREEN 1 - PORTAL & LOGIN (1440 x 900) -->
+  <!-- ========================================================================= -->
+  <g id="Frame_1_Portal_Login" transform="translate(1380, 200)">
+    <text x="0" y="-20" fill="#9CA3AF" font-family="JetBrains Mono, monospace" font-size="16" font-weight="bold"># 01_SCREEN_1_PORTAL_&amp;_LOGIN (1440 × 900)</text>
+    <rect width="1440" height="900" rx="16" fill="url(#portalGradMaster)" stroke="#3D3D3D" stroke-width="2"/>
+
+    <!-- Left Column: Wordmark & Stitched Description -->
+    <text x="100" y="300" fill="url(#wordmarkGradMaster)" font-family="Syne, sans-serif" font-size="80" font-weight="800">TUMIN</text>
+    <text x="100" y="355" fill="#A7F3D0" font-family="Plus Jakarta Sans, sans-serif" font-size="24" font-weight="600">Tino Underwear UMKM Integration</text>
+
+    <line x1="100" y1="390" x2="100" y2="480" stroke="#10B981" stroke-width="2" stroke-dasharray="6 6"/>
+    <text x="125" y="415" fill="#D1D5DB" font-family="Plus Jakarta Sans, sans-serif" font-size="15">TUMIN merupakan sistem digital yang dirancang untuk membantu</text>
+    <text x="125" y="440" fill="#D1D5DB" font-family="Plus Jakarta Sans, sans-serif" font-size="15">Tino Underwear mengelola operasional bisnis secara terintegrasi,</text>
+    <text x="125" y="465" fill="#D1D5DB" font-family="Plus Jakarta Sans, sans-serif" font-size="15">mulai dari transaksi penjualan, pengelolaan stok, mitra seller, hingga piutang.</text>
+
+    <text x="100" y="830" fill="#9CA3AF" font-family="Plus Jakarta Sans, sans-serif" font-size="13">Tino Underwear · Bekasi · WhatsApp: +62 812-9876-5432</text>
+
+    <!-- Right Column: Dark Chamfered Card -->
+    <path d="M 854 180 L 1326 180 L 1340 194 L 1340 706 L 1326 720 L 854 720 L 840 706 L 840 194 Z" fill="#130E26" stroke="#10B981" stroke-width="1.5" stroke-dasharray="6 4"/>
+    
+    <text x="880" y="235" fill="#A78BFA" font-family="JetBrains Mono, monospace" font-size="12" letter-spacing="2">PINTU MASUK SISTEM</text>
+    <text x="880" y="270" fill="#FFFFFF" font-family="Plus Jakarta Sans, sans-serif" font-size="22" font-weight="bold">Masuk ke Portal TUMIN</text>
+
+    <!-- Segmented Tabs: Owner | Kasir | Seller -->
+    <rect x="880" y="295" width="420" height="38" rx="6" fill="#1E1738"/>
+    <rect x="882" y="297" width="138" height="34" rx="4" fill="#047857"/>
+    <text x="930" y="318" fill="#FFFFFF" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="600">Owner</text>
+    <text x="1070" y="318" fill="#9CA3AF" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="600">Kasir</text>
+    <text x="1210" y="318" fill="#9CA3AF" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="600">Seller</text>
+    
+    <text x="880" y="355" fill="#6EE7B7" font-family="Plus Jakarta Sans, sans-serif" font-size="11" font-style="italic">Akses penuh: analitik penjualan, approval seller, kontrol piutang &amp; ekspor laporan.</text>
+
+    <!-- Inputs with Dashed Bottom -->
+    <text x="880" y="405" fill="#D1D5DB" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="600">Email / Username</text>
+    <line x1="880" y1="445" x2="1300" y2="445" stroke="#A78BFA" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <text x="880" y="435" fill="#FFFFFF" font-family="Plus Jakarta Sans, sans-serif" font-size="14">owner@tinounderwear.id</text>
+
+    <text x="880" y="495" fill="#D1D5DB" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="600">Kata Sandi</text>
+    <line x1="880" y1="535" x2="1300" y2="535" stroke="#A78BFA" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <text x="880" y="525" fill="#FFFFFF" font-family="Plus Jakarta Sans, sans-serif" font-size="14">••••••••••••</text>
+
+    <!-- Checkbox & Forgot -->
+    <rect x="880" y="560" width="14" height="14" rx="3" fill="#047857"/>
+    <text x="905" y="572" fill="#D1D5DB" font-family="Plus Jakarta Sans, sans-serif" font-size="12">Ingat saya</text>
+    <text x="1210" y="572" fill="#A78BFA" font-family="Plus Jakarta Sans, sans-serif" font-size="12">Lupa password?</text>
+
+    <!-- Primary Button (Cut Corner) -->
+    <path d="M 886 605 L 1294 605 L 1300 611 L 1300 649 L 1294 655 L 886 655 L 880 649 L 880 611 Z" fill="#047857"/>
+    <text x="1025" y="635" fill="#FFFFFF" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="bold">Masuk sebagai Owner</text>
+
+    <text x="1080" y="685" fill="#9CA3AF" font-family="Plus Jakarta Sans, sans-serif" font-size="12">atau</text>
+    <text x="1020" y="705" fill="#A78BFA" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="600">Daftar sebagai Seller (Mitra Baru)</text>
+  </g>
+
+  <!-- ========================================================================= -->
+  <!-- FRAME 2: SCREEN 2 - KASIR / POS (1440 x 900) -->
+  <!-- ========================================================================= -->
+  <g id="Frame_2_Kasir_POS" transform="translate(2900, 200)">
+    <text x="0" y="-20" fill="#9CA3AF" font-family="JetBrains Mono, monospace" font-size="16" font-weight="bold"># 02_SCREEN_2_KASIR_/_POS (1440 × 900)</text>
+    <rect width="1440" height="900" rx="16" fill="#F8FAF9" stroke="#3D3D3D" stroke-width="2"/>
+
+    <!-- Top Bar -->
+    <rect width="1440" height="56" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1"/>
+    <text x="30" y="36" fill="#047857" font-family="Syne, sans-serif" font-size="22" font-weight="800">TUMIN</text>
+    <text x="130" y="34" fill="#047857" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="bold">Kasir (POS)</text>
+    <text x="230" y="34" fill="#4B6359" font-family="Plus Jakarta Sans, sans-serif" font-size="13">Riwayat</text>
+    <text x="310" y="34" fill="#4B6359" font-family="Plus Jakarta Sans, sans-serif" font-size="13">Produk &amp; Stok</text>
+    <text x="430" y="34" fill="#4B6359" font-family="Plus Jakarta Sans, sans-serif" font-size="13">Piutang</text>
+    <text x="510" y="34" fill="#4B6359" font-family="Plus Jakarta Sans, sans-serif" font-size="13">Seller</text>
+    <text x="1260" y="34" fill="#10241D" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="600">Siti Rahma · Shift Pagi</text>
+
+    <!-- Main Content Left (Search, Pills, Grid) -->
+    <rect x="30" y="76" width="940" height="42" rx="6" fill="#FFFFFF" stroke="#047857" stroke-width="1" stroke-dasharray="4 4"/>
+    <text x="55" y="102" fill="#9CA3AF" font-family="Plus Jakarta Sans, sans-serif" font-size="13">Cari nama atau scan barcode / SKU (contoh: TU-CDP-01)...</text>
+
+    <!-- Category Pills -->
+    <rect x="30" y="130" width="80" height="30" rx="15" fill="#047857"/>
+    <text x="52" y="150" fill="#FFFFFF" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="bold">Semua</text>
+    <rect x="120" y="130" width="90" height="30" rx="15" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1"/>
+    <text x="142" y="150" fill="#4B6359" font-family="Plus Jakarta Sans, sans-serif" font-size="12">CD Pria</text>
+    <rect x="220" y="130" width="100" height="30" rx="15" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1"/>
+    <text x="240" y="150" fill="#4B6359" font-family="Plus Jakarta Sans, sans-serif" font-size="12">CD Wanita</text>
+    <rect x="330" y="130" width="100" height="30" rx="15" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1"/>
+    <text x="350" y="150" fill="#4B6359" font-family="Plus Jakarta Sans, sans-serif" font-size="12">Anak-Anak</text>
+    <rect x="440" y="130" width="80" height="30" rx="15" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1"/>
+    <text x="460" y="150" fill="#4B6359" font-family="Plus Jakarta Sans, sans-serif" font-size="12">Korset</text>
+
+    <!-- Product Grid Cards (Sample 4 cards) -->
+    <!-- Card 1 -->
+    <rect x="30" y="180" width="220" height="150" rx="8" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1"/>
+    <text x="45" y="205" fill="#047857" font-family="JetBrains Mono, monospace" font-size="11" font-weight="bold">TU-CDP-01</text>
+    <text x="45" y="230" fill="#10241D" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="bold">CD Pria Boxer Bamboo</text>
+    <text x="45" y="250" fill="#4B6359" font-family="Plus Jakarta Sans, sans-serif" font-size="11">Seamless Anti-Bakteri</text>
+    <text x="45" y="300" fill="#047857" font-family="JetBrains Mono, monospace" font-size="15" font-weight="bold">Rp 28.000</text>
+    <rect x="155" y="285" width="80" height="22" rx="11" fill="#D1FAE5"/>
+    <text x="170" y="300" fill="#065F46" font-family="Plus Jakarta Sans, sans-serif" font-size="10" font-weight="bold">Stok 45</text>
+
+    <!-- Card 2 (Menipis) -->
+    <rect x="270" y="180" width="220" height="150" rx="8" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1"/>
+    <text x="285" y="205" fill="#047857" font-family="JetBrains Mono, monospace" font-size="11" font-weight="bold">TU-CDP-02</text>
+    <text x="285" y="230" fill="#10241D" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="bold">CD Brief Sporty (Isi 3)</text>
+    <text x="285" y="250" fill="#4B6359" font-family="Plus Jakarta Sans, sans-serif" font-size="11">Katun Combed 30s</text>
+    <text x="285" y="300" fill="#047857" font-family="JetBrains Mono, monospace" font-size="15" font-weight="bold">Rp 55.000</text>
+    <rect x="385" y="285" width="90" height="22" rx="11" fill="#FEF3C7"/>
+    <text x="395" y="300" fill="#92400E" font-family="Plus Jakarta Sans, sans-serif" font-size="10" font-weight="bold">Stok 8 - menipis</text>
+
+    <!-- Card 3 (Habis - Disabled) -->
+    <rect x="510" y="180" width="220" height="150" rx="8" fill="#F3F4F6" stroke="#E5E7EB" stroke-width="1" opacity="0.6"/>
+    <text x="525" y="205" fill="#9CA3AF" font-family="JetBrains Mono, monospace" font-size="11" font-weight="bold">TU-CDW-03</text>
+    <text x="525" y="230" fill="#6B7280" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="bold">CD Wanita High-Waist</text>
+    <text x="525" y="250" fill="#9CA3AF" font-family="Plus Jakarta Sans, sans-serif" font-size="11">Tummy Control Slim</text>
+    <text x="525" y="300" fill="#6B7280" font-family="JetBrains Mono, monospace" font-size="15" font-weight="bold">Rp 32.000</text>
+    <rect x="635" y="285" width="80" height="22" rx="11" fill="#FFE4E6"/>
+    <text x="655" y="300" fill="#9F1239" font-family="Plus Jakarta Sans, sans-serif" font-size="10" font-weight="bold">Habis</text>
+
+    <!-- Card 4 -->
+    <rect x="750" y="180" width="220" height="150" rx="8" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1"/>
+    <text x="765" y="205" fill="#047857" font-family="JetBrains Mono, monospace" font-size="11" font-weight="bold">TU-KOR-01</text>
+    <text x="765" y="230" fill="#10241D" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="bold">Korset Postpartum 4-Bone</text>
+    <text x="765" y="250" fill="#4B6359" font-family="Plus Jakarta Sans, sans-serif" font-size="11">Pelangsing Pasca Melahirkan</text>
+    <text x="765" y="300" fill="#047857" font-family="JetBrains Mono, monospace" font-size="15" font-weight="bold">Rp 85.000</text>
+    <rect x="875" y="285" width="80" height="22" rx="11" fill="#D1FAE5"/>
+    <text x="890" y="300" fill="#065F46" font-family="Plus Jakarta Sans, sans-serif" font-size="10" font-weight="bold">Stok 14</text>
+
+    <!-- Right Cart: 400px Chamfered Cart Panel with Stitched Border -->
+    <path d="M 1010 76 L 1400 76 L 1410 86 L 1410 860 L 1400 870 L 1010 870 L 1000 860 L 1000 86 Z" fill="#FFFFFF" stroke="#047857" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <text x="1030" y="115" fill="#10241D" font-family="Plus Jakarta Sans, sans-serif" font-size="16" font-weight="bold">Keranjang Penjualan</text>
+    <text x="1270" y="115" fill="#4B6359" font-family="JetBrains Mono, monospace" font-size="12">#INV-20261007-001</text>
+    <line x1="1030" y1="130" x2="1380" y2="130" stroke="#047857" stroke-width="1" stroke-dasharray="4 4"/>
+
+    <!-- Cart Item Rows -->
+    <text x="1030" y="160" fill="#10241D" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="600">CD Pria Boxer Bamboo (2x)</text>
+    <text x="1310" y="160" fill="#047857" font-family="JetBrains Mono, monospace" font-size="13" font-weight="bold">Rp 56.000</text>
+
+    <text x="1030" y="200" fill="#10241D" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="600">Korset Postpartum 4-Bone (1x)</text>
+    <text x="1310" y="200" fill="#047857" font-family="JetBrains Mono, monospace" font-size="13" font-weight="bold">Rp 85.000</text>
+
+    <!-- Payment Methods: Tunai | Transfer Bank | Kredit -->
+    <text x="1030" y="470" fill="#10241D" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="bold">Metode Pembayaran</text>
+    
+    <rect x="1030" y="485" width="110" height="32" rx="4" fill="#047857"/>
+    <text x="1065" y="506" fill="#FFFFFF" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="bold">Tunai</text>
+
+    <rect x="1150" y="485" width="120" height="32" rx="4" fill="#F3F4F6"/>
+    <text x="1165" y="506" fill="#4B6359" font-family="Plus Jakarta Sans, sans-serif" font-size="12">Transfer Bank</text>
+
+    <rect x="1280" y="485" width="100" height="32" rx="4" fill="#F3F4F6"/>
+    <text x="1310" y="506" fill="#4B6359" font-family="Plus Jakarta Sans, sans-serif" font-size="12">Kredit</text>
+
+    <!-- Tunai Cash Received Input -->
+    <text x="1030" y="545" fill="#4B6359" font-family="Plus Jakarta Sans, sans-serif" font-size="12">Uang Diterima (Rp)</text>
+    <line x1="1030" y1="585" x2="1380" y2="585" stroke="#047857" stroke-width="1.5" stroke-dasharray="4 4"/>
+    <text x="1030" y="575" fill="#10241D" font-family="JetBrains Mono, monospace" font-size="16" font-weight="bold">Rp 150.000</text>
+    <text x="1030" y="615" fill="#4B6359" font-family="Plus Jakarta Sans, sans-serif" font-size="12">Kembalian: <tspan fill="#047857" font-weight="bold">Rp 9.000</tspan></text>
+
+    <!-- Total -->
+    <line x1="1030" y1="740" x2="1380" y2="740" stroke="#E5E7EB" stroke-width="1"/>
+    <text x="1030" y="775" fill="#10241D" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="bold">TOTAL TAGIHAN:</text>
+    <text x="1230" y="775" fill="#047857" font-family="JetBrains Mono, monospace" font-size="22" font-weight="bold">Rp 141.000</text>
+
+    <!-- Action Buttons -->
+    <path d="M 1034 810 L 1190 810 L 1194 814 L 1194 846 L 1190 850 L 1034 850 L 1030 846 L 1030 814 Z" fill="#F3F4F6"/>
+    <text x="1085" y="835" fill="#4B6359" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="bold">Batalkan</text>
+
+    <path d="M 1214 810 L 1376 810 L 1380 814 L 1380 846 L 1376 850 L 1214 850 L 1210 846 L 1210 814 Z" fill="#047857"/>
+    <text x="1255" y="835" fill="#FFFFFF" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="bold">Bayar Sekarang</text>
+  </g>
+
+  <!-- ========================================================================= -->
+  <!-- FRAME 3: SCREEN 3 - OWNER DASHBOARD (1440 x 900) -->
+  <!-- ========================================================================= -->
+  <g id="Frame_3_Owner_Dashboard" transform="translate(4420, 200)">
+    <text x="0" y="-20" fill="#9CA3AF" font-family="JetBrains Mono, monospace" font-size="16" font-weight="bold"># 03_SCREEN_3_OWNER_ERP_DASHBOARD (1440 × 900)</text>
+    <rect width="1440" height="900" rx="16" fill="#F8FAF9" stroke="#3D3D3D" stroke-width="2"/>
+
+    <!-- Sidebar Left -->
+    <rect width="240" height="900" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1"/>
+    <text x="30" y="45" fill="#047857" font-family="Syne, sans-serif" font-size="24" font-weight="800">TUMIN</text>
+    <text x="30" y="68" fill="#4B6359" font-family="Plus Jakarta Sans, sans-serif" font-size="11">Tino Underwear ERP</text>
+
+    <rect x="15" y="95" width="210" height="38" rx="6" fill="#047857"/>
+    <text x="45" y="119" fill="#FFFFFF" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="bold">Dashboard</text>
+    <text x="45" y="160" fill="#4B6359" font-family="Plus Jakarta Sans, sans-serif" font-size="13">Layar Kasir (POS)</text>
+    <text x="45" y="200" fill="#4B6359" font-family="Plus Jakarta Sans, sans-serif" font-size="13">Katalog Produk</text>
+    <text x="45" y="240" fill="#4B6359" font-family="Plus Jakarta Sans, sans-serif" font-size="13">Kontrol Stok</text>
+    <text x="45" y="280" fill="#4B6359" font-family="Plus Jakarta Sans, sans-serif" font-size="13">Mitra Seller</text>
+    <text x="45" y="320" fill="#4B6359" font-family="Plus Jakarta Sans, sans-serif" font-size="13">Buku Piutang</text>
+    <text x="45" y="360" fill="#4B6359" font-family="Plus Jakarta Sans, sans-serif" font-size="13">Laporan Keuangan</text>
+
+    <!-- Top Header -->
+    <rect x="240" width="1200" height="56" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1"/>
+    <text x="270" y="36" fill="#10241D" font-family="Plus Jakarta Sans, sans-serif" font-size="18" font-weight="bold">Dashboard</text>
+    <text x="375" y="35" fill="#4B6359" font-family="Plus Jakarta Sans, sans-serif" font-size="13">· Selamat datang kembali, Owner.</text>
+    <text x="1270" y="35" fill="#10241D" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="600">Pak Tino (Owner)</text>
+
+    <!-- 4 Summary KPI Cards -->
+    <rect x="270" y="85" width="270" height="110" rx="8" fill="#FFFFFF" stroke="#A7F3D0" stroke-width="1"/>
+    <text x="290" y="115" fill="#065F46" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="bold">Omzet Hari Ini</text>
+    <text x="290" y="155" fill="#047857" font-family="JetBrains Mono, monospace" font-size="24" font-weight="bold">Rp 2.130.000</text>
+
+    <rect x="560" y="85" width="270" height="110" rx="8" fill="#FFFFFF" stroke="#DDD6FE" stroke-width="1"/>
+    <text x="580" y="115" fill="#5B21B6" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="bold">Omzet Bulan Ini</text>
+    <text x="580" y="155" fill="#6D28D9" font-family="JetBrains Mono, monospace" font-size="24" font-weight="bold">Rp 62.400.000</text>
+
+    <rect x="850" y="85" width="270" height="110" rx="8" fill="#FFFFFF" stroke="#FECDD3" stroke-width="1"/>
+    <text x="870" y="115" fill="#9F1239" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="bold">Total Piutang Aktif</text>
+    <text x="870" y="155" fill="#BE123C" font-family="JetBrains Mono, monospace" font-size="24" font-weight="bold">Rp 5.500.000</text>
+
+    <rect x="1140" y="85" width="260" height="110" rx="8" fill="#FFFFFF" stroke="#FDE68A" stroke-width="1"/>
+    <text x="1160" y="115" fill="#92400E" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="bold">Produk Stok Menipis</text>
+    <text x="1160" y="155" fill="#D97706" font-family="JetBrains Mono, monospace" font-size="24" font-weight="bold">4 SKU</text>
+
+    <!-- Sales Bar Chart Section -->
+    <rect x="270" y="215" width="1130" height="260" rx="8" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1"/>
+    <text x="295" y="245" fill="#10241D" font-family="Plus Jakarta Sans, sans-serif" font-size="15" font-weight="bold">Tren Penjualan &amp; Performa Omzet</text>
+    
+    <!-- Chart Toggle -->
+    <rect x="1220" y="230" width="160" height="30" rx="4" fill="#F3F4F6"/>
+    <rect x="1222" y="232" width="76" height="26" rx="3" fill="#047857"/>
+    <text x="1245" y="249" fill="#FFFFFF" font-family="Plus Jakarta Sans, sans-serif" font-size="11" font-weight="bold">Harian</text>
+    <text x="1315" y="249" fill="#4B6359" font-family="Plus Jakarta Sans, sans-serif" font-size="11">Bulanan</text>
+
+    <!-- Bars -->
+    <rect x="340" y="370" width="60" height="70" fill="#047857" opacity="0.8"/>
+    <text x="350" y="460" fill="#4B6359" font-family="JetBrains Mono, monospace" font-size="11">01 Okt</text>
+
+    <rect x="470" y="300" width="60" height="140" fill="#047857" opacity="0.8"/>
+    <text x="480" y="460" fill="#4B6359" font-family="JetBrains Mono, monospace" font-size="11">02 Okt</text>
+
+    <rect x="600" y="380" width="60" height="60" fill="#047857" opacity="0.8"/>
+    <text x="610" y="460" fill="#4B6359" font-family="JetBrains Mono, monospace" font-size="11">03 Okt</text>
+
+    <rect x="730" y="340" width="60" height="100" fill="#047857" opacity="0.8"/>
+    <text x="740" y="460" fill="#4B6359" font-family="JetBrains Mono, monospace" font-size="11">04 Okt</text>
+
+    <rect x="860" y="390" width="60" height="50" fill="#047857" opacity="0.8"/>
+    <text x="870" y="460" fill="#4B6359" font-family="JetBrains Mono, monospace" font-size="11">05 Okt</text>
+
+    <rect x="990" y="320" width="60" height="120" fill="#047857" opacity="0.8"/>
+    <text x="1000" y="460" fill="#4B6359" font-family="JetBrains Mono, monospace" font-size="11">06 Okt</text>
+
+    <rect x="1120" y="310" width="60" height="130" fill="#047857"/>
+    <text x="1125" y="460" fill="#047857" font-family="JetBrains Mono, monospace" font-size="11" font-weight="bold">Hari Ini</text>
+
+    <!-- 3 Compact Lists Below Chart -->
+    <rect x="270" y="495" width="360" height="375" rx="8" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1"/>
+    <text x="290" y="525" fill="#10241D" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="bold">Produk Stok Menipis</text>
+    <text x="290" y="560" fill="#10241D" font-family="Plus Jakarta Sans, sans-serif" font-size="12">CD Brief Sporty (Isi 3)</text>
+    <text x="540" y="560" fill="#D97706" font-family="JetBrains Mono, monospace" font-size="11" font-weight="bold">Sisa 8</text>
+    <text x="290" y="600" fill="#10241D" font-family="Plus Jakarta Sans, sans-serif" font-size="12">CD Wanita Seamless Mid-Waist</text>
+    <text x="540" y="600" fill="#D97706" font-family="JetBrains Mono, monospace" font-size="11" font-weight="bold">Sisa 5</text>
+    <text x="290" y="640" fill="#10241D" font-family="Plus Jakarta Sans, sans-serif" font-size="12">CD Wanita High-Waist Tummy</text>
+    <text x="540" y="640" fill="#BE123C" font-family="JetBrains Mono, monospace" font-size="11" font-weight="bold">Habis (0)</text>
+
+    <rect x="655" y="495" width="360" height="375" rx="8" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1"/>
+    <text x="675" y="525" fill="#10241D" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="bold">Piutang Jatuh Tempo</text>
+    <text x="675" y="560" fill="#10241D" font-family="Plus Jakarta Sans, sans-serif" font-size="12">Budi Santoso (Toko Budi Jaya)</text>
+    <text x="910" y="560" fill="#BE123C" font-family="JetBrains Mono, monospace" font-size="11" font-weight="bold">Rp 1.450.000</text>
+    <text x="675" y="600" fill="#10241D" font-family="Plus Jakarta Sans, sans-serif" font-size="12">Hajjah Maryam (Grosir Maryam)</text>
+    <text x="910" y="600" fill="#BE123C" font-family="JetBrains Mono, monospace" font-size="11" font-weight="bold">Rp 3.200.000</text>
+    <text x="675" y="640" fill="#10241D" font-family="Plus Jakarta Sans, sans-serif" font-size="12">Hendra Wijaya (Kios Hendra)</text>
+    <text x="910" y="640" fill="#BE123C" font-family="JetBrains Mono, monospace" font-size="11" font-weight="bold">Rp 850.000</text>
+
+    <rect x="1040" y="495" width="360" height="375" rx="8" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1"/>
+    <text x="1060" y="525" fill="#10241D" font-family="Plus Jakarta Sans, sans-serif" font-size="14" font-weight="bold">Transaksi Terkini</text>
+    <text x="1060" y="560" fill="#10241D" font-family="JetBrains Mono, monospace" font-size="12">#INV-20261007-001</text>
+    <text x="1300" y="560" fill="#047857" font-family="JetBrains Mono, monospace" font-size="11" font-weight="bold">Rp 85.000</text>
+    <text x="1060" y="600" fill="#10241D" font-family="JetBrains Mono, monospace" font-size="12">#INV-20261006-003</text>
+    <text x="1300" y="600" fill="#047857" font-family="JetBrains Mono, monospace" font-size="11" font-weight="bold">Rp 128.000</text>
+    <text x="1060" y="640" fill="#10241D" font-family="JetBrains Mono, monospace" font-size="12">#INV-20261005-002</text>
+    <text x="1300" y="640" fill="#047857" font-family="JetBrains Mono, monospace" font-size="11" font-weight="bold">Rp 850.000</text>
+  </g>
+
+  <!-- ========================================================================= -->
+  <!-- FRAME 4: SCREEN 4 - SELLER PORTAL PWA (393 x 852) -->
+  <!-- ========================================================================= -->
+  <g id="Frame_4_Seller_Portal" transform="translate(5940, 200)">
+    <text x="0" y="-20" fill="#9CA3AF" font-family="JetBrains Mono, monospace" font-size="16" font-weight="bold"># 04_SCREEN_4_SELLER_PWA (393 × 852)</text>
+    <rect width="393" height="852" rx="40" fill="#F8FAF9" stroke="#3D3D3D" stroke-width="3"/>
+
+    <!-- Dynamic Island -->
+    <rect x="136" y="14" width="120" height="26" rx="13" fill="#000000"/>
+
+    <!-- Header -->
+    <rect y="48" width="393" height="54" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1"/>
+    <text x="20" y="80" fill="#047857" font-family="Syne, sans-serif" font-size="20" font-weight="800">TUMIN</text>
+    <text x="250" y="80" fill="#10241D" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="bold">Toko Budi Jaya</text>
+
+    <!-- Welcome -->
+    <text x="20" y="135" fill="#10241D" font-family="Plus Jakarta Sans, sans-serif" font-size="18" font-weight="bold">Selamat datang, Budi 👋</text>
+    <text x="20" y="155" fill="#4B6359" font-family="Plus Jakarta Sans, sans-serif" font-size="12">Kios Kranji, Bekasi Barat</text>
+
+    <!-- 3 Summary Cards -->
+    <rect x="20" y="175" width="353" height="100" rx="12" fill="#FFFFFF" stroke="#6EE7B7" stroke-width="1"/>
+    <text x="35" y="200" fill="#065F46" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="bold">Tagihan Belum Dibayar</text>
+    <text x="35" y="240" fill="#BE123C" font-family="JetBrains Mono, monospace" font-size="24" font-weight="bold">Rp 1.450.000</text>
+    <text x="35" y="260" fill="#4B6359" font-family="Plus Jakarta Sans, sans-serif" font-size="11">Tempo terdekat: 20 Okt 2026</text>
+
+    <rect x="20" y="290" width="170" height="80" rx="12" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1"/>
+    <text x="32" y="315" fill="#5B21B6" font-family="Plus Jakarta Sans, sans-serif" font-size="11" font-weight="bold">Total Tagihan</text>
+    <text x="32" y="345" fill="#6D28D9" font-family="JetBrains Mono, monospace" font-size="16" font-weight="bold">Rp 1.800.000</text>
+
+    <rect x="203" y="290" width="170" height="80" rx="12" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1"/>
+    <text x="215" y="315" fill="#374151" font-family="Plus Jakarta Sans, sans-serif" font-size="11" font-weight="bold">Jumlah Stok</text>
+    <text x="215" y="345" fill="#10241D" font-family="JetBrains Mono, monospace" font-size="16" font-weight="bold">43 pcs</text>
+
+    <!-- Recent Invoices List -->
+    <text x="20" y="405" fill="#10241D" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="bold">TAGIHAN TERBARU</text>
+
+    <rect x="20" y="420" width="353" height="65" rx="8" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1"/>
+    <text x="35" y="445" fill="#10241D" font-family="JetBrains Mono, monospace" font-size="12" font-weight="bold">#INV-20261004-001</text>
+    <text x="35" y="468" fill="#4B6359" font-family="Plus Jakarta Sans, sans-serif" font-size="11">Jatuh Tempo: 25 Okt 2026</text>
+    <text x="260" y="455" fill="#BE123C" font-family="JetBrains Mono, monospace" font-size="13" font-weight="bold">Rp 1.450.000</text>
+
+    <rect x="20" y="495" width="353" height="65" rx="8" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1"/>
+    <text x="35" y="520" fill="#10241D" font-family="JetBrains Mono, monospace" font-size="12" font-weight="bold">#INV-20260920-002</text>
+    <text x="35" y="543" fill="#4B6359" font-family="Plus Jakarta Sans, sans-serif" font-size="11">Status: Lunas</text>
+    <text x="290" y="530" fill="#065F46" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="bold">LUNAS</text>
+
+    <!-- Bottom Navigation Bar -->
+    <rect y="788" width="393" height="64" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1"/>
+    <text x="35" y="825" fill="#047857" font-family="Plus Jakarta Sans, sans-serif" font-size="10" font-weight="bold">Beranda</text>
+    <text x="110" y="825" fill="#6B7280" font-family="Plus Jakarta Sans, sans-serif" font-size="10">Stok Saya</text>
+    <text x="195" y="825" fill="#6B7280" font-family="Plus Jakarta Sans, sans-serif" font-size="10">Tagihan</text>
+    <text x="275" y="825" fill="#6B7280" font-family="Plus Jakarta Sans, sans-serif" font-size="10">Riwayat</text>
+    <text x="345" y="825" fill="#6B7280" font-family="Plus Jakarta Sans, sans-serif" font-size="10">Profil</text>
+  </g>
+</svg>

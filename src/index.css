@@ -1,0 +1,255 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    color: #10241D;
+    font-size: 15px;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: #047857 #F1F5F9;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    font-size: 15px;
+    line-height: 1.5;
+    color: #10241D;
+    background-color: #F8FAF9;
+    min-height: 100vh;
+    min-height: 100dvh;
+    -webkit-overflow-scrolling: touch;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #047857 #F1F5F9;
+  }
+}
+
+.font-display {
+  font-family: 'Syne', sans-serif;
+}
+
+.font-mono-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Base text scales */
+.text-body {
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.text-label {
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* Fabric Pattern Weave Backgrounds */
+.bg-fabric-pattern {
+  background-color: #F8FAF9;
+  background-image: 
+    radial-gradient(#ECFDF5 0%, transparent 70%),
+    repeating-linear-gradient(45deg, rgba(4, 120, 87, 0.025) 0px, rgba(4, 120, 87, 0.025) 1.5px, transparent 1.5px, transparent 10px),
+    repeating-linear-gradient(-45deg, rgba(109, 40, 217, 0.02) 0px, rgba(109, 40, 217, 0.02) 1.5px, transparent 1.5px, transparent 10px);
+}
+
+.bg-tumin-bright {
+  background: linear-gradient(135deg, #ECFDF5 0%, #F5F3FF 100%);
+  background-attachment: fixed;
+}
+
+.bg-portal-gradient {
+  background: radial-gradient(ellipse at 20% 20%, #064E3B 0%, #04382A 35%, #1F103A 75%, #0C0617 100%);
+}
+
+/* Chamfered Fabric Pattern Panels (diagonally cut corners) */
+.chamfer-card {
+  clip-path: polygon(
+    14px 0%, calc(100% - 14px) 0%,
+    100% 14px, 100% calc(100% - 14px),
+    calc(100% - 14px) 100%, 14px 100%,
+    0% calc(100% - 14px), 0% 14px
+  );
+}
+
+.chamfer-card-sm {
+  clip-path: polygon(
+    8px 0%, calc(100% - 8px) 0%,
+    100% 8px, 100% calc(100% - 8px),
+    calc(100% - 8px) 100%, 8px 100%,
+    0% calc(100% - 8px), 0% 8px
+  );
+}
+
+/* Buttons with cut corners (chamfered button edges) */
+.chamfer-btn {
+  clip-path: polygon(
+    6px 0%, calc(100% - 6px) 0%,
+    100% 6px, 100% calc(100% - 6px),
+    calc(100% - 6px) 100%, 6px 100%,
+    0% calc(100% - 6px), 0% 6px
+  );
+}
+
+.chamfer-btn-sm {
+  clip-path: polygon(
+    4px 0%, calc(100% - 4px) 0%,
+    100% 4px, 100% calc(100% - 4px),
+    calc(100% - 4px) 100%, 4px 100%,
+    0% calc(100% - 4px), 0% 4px
+  );
+}
+
+/* Inputs with dashed bottom border (tailor stitch line) */
+.input-stitch {
+  border-top: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-bottom: 1.5px dashed rgba(75, 99, 89, 0.45) !important;
+  background-color: transparent !important;
+  border-radius: 0 !important;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.input-stitch:focus {
+  outline: none !important;
+  border-bottom-color: #047857 !important;
+  border-bottom-style: solid !important;
+  background-color: rgba(4, 120, 87, 0.04) !important;
+}
+
+.input-stitch-dark {
+  border-top: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-bottom: 1.5px dashed rgba(167, 139, 250, 0.45) !important;
+  background-color: rgba(26, 20, 51, 0.4) !important;
+  border-radius: 0 !important;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.input-stitch-dark:focus {
+  outline: none !important;
+  border-bottom-color: #10B981 !important;
+  border-bottom-style: solid !important;
+  background-color: rgba(16, 185, 129, 0.08) !important;
+}
+
+/* Stitched dashed lines */
+.border-stitch {
+  border-style: dashed;
+  border-width: 1.5px;
+}
+
+.border-stitch-emerald {
+  border-style: dashed;
+  border-color: rgba(4, 120, 87, 0.35);
+}
+
+.border-stitch-violet {
+  border-style: dashed;
+  border-color: rgba(109, 40, 217, 0.35);
+}
+
+/* Dashed vertical and horizontal stitch accents */
+.stitch-v {
+  background-image: repeating-linear-gradient(to bottom, #047857 0, #047857 5px, transparent 5px, transparent 10px);
+}
+
+.stitch-v-muted {
+  background-image: repeating-linear-gradient(to bottom, rgba(75, 99, 89, 0.4) 0, rgba(75, 99, 89, 0.4) 4px, transparent 4px, transparent 8px);
+}
+
+.stitch-h-muted {
+  background-image: repeating-linear-gradient(to right, rgba(75, 99, 89, 0.3) 0, rgba(75, 99, 89, 0.3) 5px, transparent 5px, transparent 10px);
+}
+
+/* High-Visibility Custom Scrollbar for all devices & browsers */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+  border-left: 1px solid #E2E8F0;
+}
+::-webkit-scrollbar-thumb {
+  background: #047857;
+  border-radius: 6px;
+  border: 2px solid #F1F5F9;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #065F46;
+}
+::-webkit-scrollbar-thumb:active {
+  background: #064E3B;
+}
+
+/* Custom Scrollbar for Dark Portal Screen */
+.bg-portal-gradient {
+  scrollbar-color: #10B981 #091310;
+}
+.bg-portal-gradient::-webkit-scrollbar-track {
+  background: #091310;
+  border-left: 1px solid rgba(16, 185, 129, 0.25);
+}
+.bg-portal-gradient::-webkit-scrollbar-thumb {
+  background: #10B981;
+  border-radius: 6px;
+  border: 2px solid #091310;
+}
+.bg-portal-gradient::-webkit-scrollbar-thumb:hover {
+  background: #34D399;
+}
+
+/* Print Media Optimization for PDF Rekap */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm;
+  }
+
+  body {
+    background-color: white !important;
+    color: black !important;
+    font-size: 11pt !important;
+  }
+
+  /* Hide navigation, sidebars, interactive overlays */
+  aside,
+  header,
+  nav,
+  button,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Optimize modal print container */
+  .printable-doc-root {
+    position: static !important;
+    max-height: none !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+    border: none !important;
+    width: 100% !important;
+    padding: 0 !important;
+  }
+
+  .printable-doc-modal-overlay {
+    position: static !important;
+    background: transparent !important;
+    padding: 0 !important;
+    backdrop-filter: none !important;
+  }
+}

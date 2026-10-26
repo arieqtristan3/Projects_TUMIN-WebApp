@@ -1,0 +1,6 @@
+{
+  "name": "TUMIN - Tino Underwear UMKM Integration",
+  "description": "Sistem digital manajemen operasional Information System & POS untuk Tino Underwear Bekasi: POS, stok, piutang, dan mitra seller.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
