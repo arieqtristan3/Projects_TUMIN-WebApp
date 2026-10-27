@@ -266,5 +266,5 @@ Server backend **`server.ts`** dan driver **`pg`** sudah terpasang dan siap digu
    - *(Jika database sedang mati atau `.env` belum diisi, aplikasi tetap cerdas berjalan menggunakan mode offline lokal)*.
 
 ---
-*TUMIN - Tino Underwear Management & POS System · Bekasi Timur, Jawa Barat*
+*TUMIN - Tino Underwear UMKM Integration · Bekasi Timur, Jawa Barat*
 
