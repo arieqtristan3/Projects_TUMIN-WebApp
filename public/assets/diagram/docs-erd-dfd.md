@@ -295,7 +295,7 @@ flowchart TD
     P31 -->|Simpan Data Status 'Pending'| D3
 
     D3 -->|Tampilkan Daftar Pengajuan Antrean| P32
-    Owner -->|Review Profil, Tentukan Limit Kredit (Rp)| P32
+    Owner -->|Review Profil, Tentukan Limit Kredit Rp| P32
 
     P32 -->|Keputusan Approval Disetujui| P33
     P33 -->|Update Status 'Aktif' di Database| D3
