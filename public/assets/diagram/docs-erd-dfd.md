@@ -1,5 +1,5 @@
-# 📘 Dokumentasi Perancangan Sistem: ERD & DFD
-## Proyek Capstone: TUMIN (Tino Underwear UMKM Integration)
+# Dokumentasi Perancangan Sistem: ERD & DFD
+## Proyek Capstone: TUMIN (Tino Underwear Management & POS System)
 
 Dokumen ini disusun untuk melengkapi laporan teknis dan pengujian Capstone Project, mencakup perancangan basis data relasional (**Entity Relationship Diagram - ERD**) dan pemodelan aliran data berjenjang (**Data Flow Diagram - DFD** Level 0 Context Diagram, Level 1, dan Level 2).
 
@@ -8,7 +8,7 @@ Dokumen ini disusun untuk melengkapi laporan teknis dan pengujian Capstone Proje
 # BAGIAN 1: ENTITY RELATIONSHIP DIAGRAM (ERD)
 
 ## 1.1 Diagram Konseptual & Relasi (Mermaid Format)
-*Dibawah ini merupakan gambaran dari ERD pada aplikasi TUMIN.*
+*Catatan: Diagram di bawah ini akan otomatis dirender secara visual saat dibuka di GitHub.*
 
 ```mermaid
 erDiagram
@@ -184,10 +184,10 @@ Diagram konteks menggambarkan batasan sistem (*system boundary*) secara garis be
 ```mermaid
 flowchart TD
     %% Entitas Luar
-    Owner([🏢 Owner / Pemilik Toko])
-    Kasir([🖥️ Kasir / Operator POS])
-    Seller([🤝 Mitra Seller / Reseller])
-    Customer([🛍️ Pelanggan Umum])
+    Owner([Owner / Pemilik Toko])
+    Kasir([Kasir / Operator POS])
+    Seller([Mitra Seller / Reseller])
+    Customer([Pelanggan Umum])
 
     %% Sistem Pusat
     System((0.0<br/><b>SISTEM INFORMASI & POS TUMIN</b><br/>Tino Underwear Management))
@@ -337,4 +337,4 @@ flowchart TD
 * **Data Arus `Laporan_Keuangan`**: `periode_tanggal + total_omzet_kotor + total_hpp_modal + laba_kotor + total_piutang_berjalan + stok_aset_tersedia`
 
 ---
-*Dokumen ini merupakan bagian dari berkas arsitektur proyek Capstone TUMIN (Tino Underwear UMKM Integration).*
+*Dokumen ini merupakan bagian dari berkas arsitektur proyek Capstone TUMIN (Tino Underwear Management & POS System).*
