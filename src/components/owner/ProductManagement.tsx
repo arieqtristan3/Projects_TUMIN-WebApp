@@ -3,7 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { Product, ProductCategory } from '../../types';
 import { ProductModal, AdjustStockModal } from './ProductModal';
 import { StatusBadge } from '../common/Badge';
-import { getProductSampleImage } from '../../utils/productImages';
+import { getProductDisplayImage } from '../../utils/productImages';
 import {
   Search,
   Plus,
@@ -248,6 +248,10 @@ export const ProductManagement: React.FC = () => {
               <option value="CD Wanita">CD Wanita</option>
               <option value="Anak-Anak">Anak-Anak</option>
               <option value="Korset">Korset</option>
+              <option value="Bra">Bra</option>
+              <option value="Kaos Kaki">Kaos Kaki</option>
+              <option value="Lingerie">Lingerie</option>
+              <option value="Lain-lain">Lain-lain</option>
             </select>
           </div>
 
@@ -324,7 +328,7 @@ export const ProductManagement: React.FC = () => {
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-lg bg-gray-100 border border-gray-200 overflow-hidden shrink-0">
                             <img
-                              src={getProductSampleImage(prod.sku, prod.category)}
+                              src={getProductDisplayImage(prod)}
                               alt={prod.name}
                               className="w-full h-full object-cover"
                             />
@@ -465,9 +469,9 @@ export const ProductManagement: React.FC = () => {
         isOpen={!!editingProduct}
         product={editingProduct}
         onClose={() => setEditingProduct(null)}
-        onSave={(data) => {
+        onSave={async (data) => {
           if (editingProduct) {
-            updateProduct(editingProduct.id, data);
+            await updateProduct(editingProduct.id, data);
             setEditingProduct(null);
           }
         }}
@@ -478,9 +482,9 @@ export const ProductManagement: React.FC = () => {
         isOpen={!!adjustingProduct}
         product={adjustingProduct}
         onClose={() => setAdjustingProduct(null)}
-        onSave={(newStock) => {
+        onSave={async (newStock, reason) => {
           if (adjustingProduct) {
-            adjustStock(adjustingProduct.id, newStock);
+            await adjustStock(adjustingProduct.id, newStock, reason);
             setAdjustingProduct(null);
           }
         }}

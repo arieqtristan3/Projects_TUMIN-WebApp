@@ -32,7 +32,7 @@ export const SellerRegisterModal: React.FC<SellerRegisterModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
 
@@ -48,8 +48,8 @@ export const SellerRegisterModal: React.FC<SellerRegisterModalProps> = ({
       return;
     }
 
-    if (password.length < 6) {
-      setErrorMessage('Kata sandi minimal 6 karakter.');
+    if (password.length < 8) {
+      setErrorMessage('Kata sandi minimal 8 karakter.');
       return;
     }
 
@@ -63,17 +63,21 @@ export const SellerRegisterModal: React.FC<SellerRegisterModalProps> = ({
       return;
     }
 
-    // Call state register (no email required)
-    registerSeller({
-      username: cleanUsername,
-      name: fullName.trim(),
-      phone: phone.trim(),
-      storeName: storeName.trim(),
-      address: storeAddress.trim(),
-      password,
-    });
-
-    setIsSubmitted(true);
+    try {
+      await registerSeller({
+        username: cleanUsername,
+        name: fullName.trim(),
+        phone: phone.trim(),
+        storeName: storeName.trim(),
+        address: storeAddress.trim(),
+        password,
+      });
+      setPassword('');
+      setConfirmPassword('');
+      setIsSubmitted(true);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Pendaftaran gagal. Silakan coba kembali.');
+    }
   };
 
   const handleFinish = () => {

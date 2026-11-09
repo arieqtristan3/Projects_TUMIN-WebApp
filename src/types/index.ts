@@ -11,19 +11,21 @@ export interface UserProfile {
   shift?: string;
 }
 
-export type ProductCategory = 'Semua' | 'CD Pria' | 'CD Wanita' | 'Anak-Anak' | 'Korset';
+export type ProductCategoryValue = 'CD Pria' | 'CD Wanita' | 'Anak-Anak' | 'Korset' | 'Bra' | 'Kaos Kaki' | 'Lingerie' | 'Lain-lain';
+export type ProductCategory = 'Semua' | ProductCategoryValue;
 
 export interface Product {
   id: string;
   sku: string;
   name: string;
-  category: 'CD Pria' | 'CD Wanita' | 'Anak-Anak' | 'Korset';
+  category: ProductCategoryValue;
   price: number;
   costPrice: number; // HPP (Harga Pokok Penjualan)
   stock: number;
   minStock: number;
   unit: string;
   description?: string;
+  image?: string; // URL gambar atau Base64 data URI
   lastUpdated: string;
 }
 
@@ -101,6 +103,7 @@ export interface Invoice {
     productName: string;
     quantity: number;
     unitPrice: number;
+    costPrice?: number | null; // Snapshot HPP saat transaksi
     subtotal: number;
   }[];
   subtotal: number;

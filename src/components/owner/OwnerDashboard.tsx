@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
+import { apiFetch } from '../../services/apiService';
 import { ProductManagement } from './ProductManagement';
 import { StockControl } from './StockControl';
 import { SellerManagement } from './SellerManagement';
@@ -29,7 +30,6 @@ import {
   PackageCheck,
   ChevronRight,
   ShieldCheck,
-  RefreshCw,
   Image as ImageIcon,
   Menu,
   X,
@@ -48,7 +48,6 @@ export const OwnerDashboard: React.FC = () => {
     invoices,
     pendingSellersCount,
     totalReceivablesSummary,
-    resetToDefaultData,
   } = useApp();
 
   // Active sidebar view
@@ -82,19 +81,42 @@ export const OwnerDashboard: React.FC = () => {
 
   // Store Settings state
   const [storeInfo, setStoreInfo] = useState({
-    name: 'Tino Underwear',
-    tagline: 'Pusat Grosir & Eceran Pakaian Dalam Berkualitas',
-    address: 'Jl. Pemuda No. 12, Kranji, Bekasi Barat, Kota Bekasi, Jawa Barat 17135',
-    phone: '+62 812-9876-5432',
-    email: 'kontak@tinounderwear.id',
-    bankAccount: 'BCA 521-089-2234 a.n Tino Underwear',
-    bankAccountOwner: 'Bank Central Asia (BCA)',
-    receiptFooter: 'Terima kasih atas kunjungan Anda! Barang yang sudah dibeli tidak dapat ditukar.',
+    name: '',
+    tagline: '',
+    address: '',
+    phone: '',
+    email: '',
+    bankAccount: '',
+    bankAccountOwner: '',
+    bankAccountHolder: '',
+    receiptFooter: '',
     minStockDefault: 10,
-    storeOpenTime: '08:00',
-    storeCloseTime: '21:00',
+    storeOpenTime: '',
+    storeCloseTime: '',
   });
   const [settingsSavedMessage, setSettingsSavedMessage] = useState(false);
+  const [settingsErrorMessage, setSettingsErrorMessage] = useState<string | null>(null);
+  const [settingsSaving, setSettingsSaving] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    apiFetch('/api/pengaturan', { suppressGlobalError: true }).then((response) => {
+      if (!active) return;
+      if (!response.ok) { setSettingsErrorMessage(response.error || 'Pengaturan toko gagal dimuat dari database.'); return; }
+      const data = response.data;
+      if (!data) return;
+      const [openTime = '', closeTime = ''] = String(data.operatingHours || ' - ').split(/\s*[-–]\s*/);
+      setStoreInfo((current) => ({
+        ...current, name: data.storeName ?? current.name, tagline: data.tagline ?? '',
+        address: data.address ?? '', phone: data.phone ?? '', email: data.email ?? '',
+        bankAccountOwner: data.bankName ?? '', bankAccount: data.bankAccountNumber ?? '',
+        bankAccountHolder: data.bankAccountHolder ?? '', receiptFooter: data.receiptFooter ?? '',
+        minStockDefault: Number(data.minStockDefault ?? current.minStockDefault),
+        storeOpenTime: openTime, storeCloseTime: closeTime,
+      }));
+    }).catch(() => { if (active) setSettingsErrorMessage('Tidak dapat memuat pengaturan toko.'); });
+    return () => { active = false; };
+  }, []);
 
   // Summary Metrics
   const metrics = useMemo(() => {
@@ -109,7 +131,12 @@ export const OwnerDashboard: React.FC = () => {
     const omzetBulanIni = monthInvoices.reduce((acc, curr) => acc + curr.total, 0);
 
     // Total Piutang Aktif
-    const totalPiutang = totalReceivablesSummary.total;
+    const totalPiutang =
+      typeof totalReceivablesSummary?.total === 'number' && !isNaN(totalReceivablesSummary.total)
+        ? totalReceivablesSummary.total
+        : invoices
+            .filter((i) => i.paymentMethod === 'Kredit')
+            .reduce((acc, curr) => acc + (Number(curr.remainingBalance) || 0), 0);
 
     // Produk Stok Menipis (stok <= minStock)
     const lowStockProducts = products.filter(
@@ -127,29 +154,24 @@ export const OwnerDashboard: React.FC = () => {
     };
   }, [invoices, products, totalReceivablesSummary]);
 
-  // Chart data
+  // Grafik dihitung dari faktur PostgreSQL, bukan angka contoh statis.
   const chartData = useMemo(() => {
+    const now = new Date();
     if (chartMode === 'Harian') {
-      return [
-        { label: '01 Okt', value: 1250000, orders: 8 },
-        { label: '02 Okt', value: 3420000, orders: 14 },
-        { label: '03 Okt', value: 1800000, orders: 11 },
-        { label: '04 Okt', value: 2450000, orders: 16 },
-        { label: '05 Okt', value: 1150000, orders: 9 },
-        { label: '06 Okt', value: 2980000, orders: 18 },
-        { label: '07 Okt (Hari Ini)', value: metrics.omzetHariIni || 2130000, orders: 12 },
-      ];
-    } else {
-      return [
-        { label: 'Mei 26', value: 38200000, orders: 180 },
-        { label: 'Jun 26', value: 45400000, orders: 210 },
-        { label: 'Jul 26', value: 52100000, orders: 245 },
-        { label: 'Agu 26', value: 49800000, orders: 230 },
-        { label: 'Sep 26', value: 58600000, orders: 275 },
-        { label: 'Okt 26', value: metrics.omzetBulanIni || 62400000, orders: 125 },
-      ];
+      return Array.from({ length: 7 }, (_, index) => {
+        const day = new Date(now); day.setDate(now.getDate() - (6 - index));
+        const key = day.toISOString().slice(0, 10);
+        const dayInvoices = invoices.filter((invoice) => invoice.date.slice(0, 10) === key);
+        return { label: day.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }), value: dayInvoices.reduce((sum, invoice) => sum + invoice.total, 0), orders: dayInvoices.length };
+      });
     }
-  }, [chartMode, metrics.omzetHariIni, metrics.omzetBulanIni]);
+    return Array.from({ length: 6 }, (_, index) => {
+      const monthDate = new Date(now.getFullYear(), now.getMonth() - (5 - index), 1);
+      const key = monthDate.toISOString().slice(0, 7);
+      const monthInvoices = invoices.filter((invoice) => invoice.date.slice(0, 7) === key);
+      return { label: monthDate.toLocaleDateString('id-ID', { month: 'short', year: '2-digit' }), value: monthInvoices.reduce((sum, invoice) => sum + invoice.total, 0), orders: monthInvoices.length };
+    });
+  }, [chartMode, invoices]);
 
   const maxChartVal = useMemo(() => {
     return Math.max(...chartData.map((d) => d.value), 1000000);
@@ -167,10 +189,23 @@ export const OwnerDashboard: React.FC = () => {
     return invoices.slice(0, 5);
   }, [invoices]);
 
-  const handleSaveSettings = (e: React.FormEvent) => {
+  const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSettingsSaving(true); setSettingsErrorMessage(null); setSettingsSavedMessage(false);
+    const response = await apiFetch('/api/pengaturan', {
+      method: 'PUT', suppressGlobalError: true,
+      body: JSON.stringify({
+        storeName: storeInfo.name, tagline: storeInfo.tagline, address: storeInfo.address,
+        phone: storeInfo.phone, email: storeInfo.email, bankName: storeInfo.bankAccountOwner,
+        bankAccountNumber: storeInfo.bankAccount, bankAccountHolder: storeInfo.bankAccountHolder,
+        operatingHours: `${storeInfo.storeOpenTime} - ${storeInfo.storeCloseTime}`,
+        receiptFooter: storeInfo.receiptFooter, minStockDefault: storeInfo.minStockDefault,
+      }),
+    });
+    setSettingsSaving(false);
+    if (!response.ok) { setSettingsErrorMessage(response.error || 'Pengaturan gagal disimpan ke PostgreSQL.'); return; }
     setSettingsSavedMessage(true);
-    setTimeout(() => setSettingsSavedMessage(false), 3000);
+    window.setTimeout(() => setSettingsSavedMessage(false), 3000);
   };
 
   return (
@@ -243,9 +278,11 @@ export const OwnerDashboard: React.FC = () => {
                 <Archive className="w-4 h-4" />
                 <span>Kontrol Stok</span>
               </div>
-              <span className="bg-yellow-400 text-yellow-900 font-bold px-1.5 py-0.5 rounded-full text-xs">
-                4
-              </span>
+              {metrics.lowStockCount > 0 && (
+                <span className="bg-yellow-400 text-yellow-900 font-bold px-1.5 py-0.5 rounded-full text-xs">
+                  {metrics.lowStockCount}
+                </span>
+              )}
             </button>
 
             <button
@@ -260,9 +297,11 @@ export const OwnerDashboard: React.FC = () => {
                 <Users className="w-4 h-4" />
                 <span>Mitra Seller</span>
               </div>
-              <span className="bg-yellow-400 text-yellow-900 font-bold px-1.5 py-0.5 rounded-full text-xs">
-                {pendingSellersCount || 2}
-              </span>
+              {pendingSellersCount > 0 && (
+                <span className="bg-yellow-400 text-yellow-900 font-bold px-1.5 py-0.5 rounded-full text-xs">
+                  {pendingSellersCount}
+                </span>
+              )}
             </button>
 
             <button
@@ -319,14 +358,14 @@ export const OwnerDashboard: React.FC = () => {
         <div className="p-3 border-t border-gray-200 sticky bottom-0 bg-white shrink-0">
           <div className="p-2 rounded-lg flex items-center gap-3">
             <div className="w-9 h-9 rounded-full bg-green-200 text-green-900 font-bold flex items-center justify-center text-xs shrink-0">
-              PT
+              {(currentUser?.name || 'O').split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase()}
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-xs font-bold text-gray-900 truncate">
-                Pak Tino <span className="font-normal text-gray-500">(Owner)</span>
+                {currentUser?.name || 'Owner'} <span className="font-normal text-gray-500">(Owner)</span>
               </p>
               <p className="text-[11px] text-gray-500 truncate">
-                owner@tinounderwear.id
+                {currentUser?.email || currentUser?.username || '-'}
               </p>
             </div>
           </div>
@@ -481,11 +520,11 @@ export const OwnerDashboard: React.FC = () => {
                     Dashboard Operasional &amp; Ringkasan
                   </h1>
                   <span className="bg-teal-100 text-teal-800 font-semibold text-xs px-2 py-0.5 rounded">
-                    LIVE MONITOR
+                    PEMBARUAN BERKALA
                   </span>
                 </div>
                 <p className="text-xs sm:text-sm text-gray-500 mt-1">
-                  Selamat datang kembali, Pak Tino. Pantau performa omzet bisnis dan pergerakan stok toko Tino Underwear.
+                  Selamat datang kembali, {currentUser?.name || 'Owner'}. Pantau performa omzet dan pergerakan stok toko.
                 </p>
               </div>
 
@@ -877,18 +916,11 @@ export const OwnerDashboard: React.FC = () => {
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2.5 shrink-0">
-                  <button
-                    type="button"
-                    onClick={resetToDefaultData}
-                    className="px-3.5 py-2 border border-red-300 text-red-600 hover:bg-red-50 font-medium rounded-lg text-xs sm:text-sm flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
-                  >
-                    <RefreshCw className="w-4 h-4" />
-                    <span>Reset Data Demo</span>
-                  </button>
-                </div>
               </div>
 
+              {settingsErrorMessage && (
+                <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-xs sm:text-sm text-red-800">{settingsErrorMessage}</div>
+              )}
               {settingsSavedMessage && (
                 <div className="p-4 bg-green-50 border border-green-200 rounded-xl text-xs sm:text-sm text-green-800 flex items-center gap-2">
                   <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" />
@@ -981,7 +1013,7 @@ export const OwnerDashboard: React.FC = () => {
                     </h3>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
                     <div>
                       <label className="block font-semibold text-gray-700 mb-1">
                         Nama Bank
@@ -996,7 +1028,7 @@ export const OwnerDashboard: React.FC = () => {
 
                     <div>
                       <label className="block font-semibold text-gray-700 mb-1">
-                        Nomor Rekening &amp; Atas Nama
+                        Nomor Rekening
                       </label>
                       <input
                         type="text"
@@ -1004,6 +1036,15 @@ export const OwnerDashboard: React.FC = () => {
                         onChange={(e) => setStoreInfo({ ...storeInfo, bankAccount: e.target.value })}
                         className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:border-teal-600 focus:bg-white"
                         required
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-semibold text-gray-700 mb-1">Atas Nama Rekening</label>
+                      <input
+                        type="text"
+                        value={storeInfo.bankAccountHolder}
+                        onChange={(e) => setStoreInfo({ ...storeInfo, bankAccountHolder: e.target.value })}
+                        className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:border-teal-600 focus:bg-white"
                       />
                     </div>
                   </div>
@@ -1075,10 +1116,11 @@ export const OwnerDashboard: React.FC = () => {
                     </span>
                     <button
                       type="submit"
+                      disabled={settingsSaving}
                       className="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
                     >
                       <Save className="w-4 h-4" />
-                      <span>Simpan Perubahan Pengaturan</span>
+                      <span>{settingsSaving ? 'Menyimpan...' : 'Simpan Perubahan Pengaturan'}</span>
                     </button>
                   </div>
                 </div>

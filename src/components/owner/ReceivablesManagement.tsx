@@ -72,11 +72,11 @@ export const ReceivablesManagement: React.FC = () => {
     return filteredInvoices.slice(start, start + itemsPerPage);
   }, [filteredInvoices, currentPage]);
 
-  const handleInstallmentSubmit = (e: React.FormEvent) => {
+  const handleInstallmentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!payingInvoice || !amount) return;
 
-    const res = recordInstallment({
+    const res = await recordInstallment({
       invoiceId: payingInvoice.id,
       amount: Number(amount),
       method,

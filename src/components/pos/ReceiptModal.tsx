@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { apiFetch } from '../../services/apiService';
 import { Invoice } from '../../types';
 import { ChamferCard } from '../common/ChamferCard';
 import { StitchDivider } from '../common/StitchDivider';
@@ -20,6 +21,15 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
   onClose,
 }) => {
   const [showProofModal, setShowProofModal] = useState<boolean>(false);
+  const [storeSettings, setStoreSettings] = useState({ storeName: '', tagline: '', address: '', phone: '', receiptFooter: '' });
+  useEffect(() => {
+    apiFetch('/api/pengaturan', { suppressGlobalError: true }).then((response) => {
+      if (response.ok && response.data) setStoreSettings({
+        storeName: response.data.storeName || '', tagline: response.data.tagline || '',
+        address: response.data.address || '', phone: response.data.phone || '', receiptFooter: response.data.receiptFooter || '',
+      });
+    });
+  }, []);
 
   if (!isOpen || !invoice) return null;
 
@@ -60,13 +70,13 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
             {/* Store branding */}
             <div className="text-center pb-2 border-b border-dashed border-stone-300">
               <h3 className="text-sm font-bold tracking-tight text-[#10241D]">
-                TINO UNDERWEAR BEKASI
+                {storeSettings.storeName || 'TUMIN'}
               </h3>
               <p className="text-[11px] text-stone-500">
-                Pusat Grosir & Eceran Celana Dalam
+                {storeSettings.tagline}
               </p>
               <p className="text-[10px] text-stone-400">
-                Jl. Pemuda No. 12 Kranji, Bekasi Barat · WA: 0812-9876-5432
+                {[storeSettings.address, storeSettings.phone].filter(Boolean).join(' · ')}
               </p>
             </div>
 
@@ -175,11 +185,10 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
                       <Building2 className="w-3.5 h-3.5" />
                       <span>Transfer Bank ke Rekening Owner</span>
                     </span>
-                    <span className="font-mono-num font-bold text-[#6D28D9]">BCA 521-089-2234</span>
+                    <span className="font-mono-num font-bold text-[#6D28D9]">{invoice.bankName || 'Rekening tujuan tidak tersedia'}</span>
                   </div>
                   <p className="text-[10px] text-stone-600">
-                    Penerima: Tino Underwear (Owner)
-                    {invoice.transferReference ? ` · Ref: ${invoice.transferReference}` : ''}
+                    {invoice.transferReference ? `Ref: ${invoice.transferReference}` : ''}
                   </p>
 
                   {invoice.paymentProofImage && (
@@ -205,11 +214,11 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
             {/* Automatic stock deduction alert */}
             <div className="bg-emerald-50 border border-emerald-200 p-2 rounded text-[11px] text-emerald-900 flex items-center gap-1.5 font-sans">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0" />
-              <span>Stok produk dalam gudang telah berkurang otomatis secara real-time.</span>
+              <span>Pengurangan stok telah tercatat di PostgreSQL bersama transaksi ini.</span>
             </div>
 
             <div className="text-center text-[10px] text-stone-400 pt-1">
-              Terima kasih atas kunjungan & kerja sama Anda.
+              {storeSettings.receiptFooter || 'Terima kasih atas kunjungan Anda.'}
             </div>
           </div>
 

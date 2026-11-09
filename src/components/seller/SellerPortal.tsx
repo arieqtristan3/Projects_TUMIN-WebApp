@@ -1,10 +1,11 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
+import { apiFetch } from '../../services/apiService';
 import { Invoice } from '../../types';
 import { StatusBadge, Badge } from '../common/Badge';
 import { ChamferCard } from '../common/ChamferCard';
 import { StitchDivider } from '../common/StitchDivider';
-import { getProductSampleImage } from '../../utils/productImages';
+import { getProductDisplayImage } from '../../utils/productImages';
 import {
   Home,
   Package,
@@ -43,6 +44,14 @@ interface SellerPortalProps {
 
 export const SellerPortal: React.FC<SellerPortalProps> = ({ onLogout }) => {
   const { currentUser, sellers, invoices, consignedItems, products, logout } = useApp();
+  const [paymentSettings, setPaymentSettings] = useState({ bankName: '', accountNumber: '', accountHolder: '' });
+  useEffect(() => {
+    apiFetch('/api/pengaturan', { suppressGlobalError: true }).then((response) => {
+      if (response.ok && response.data) setPaymentSettings({
+        bankName: response.data.bankName || '', accountNumber: response.data.bankAccountNumber || '', accountHolder: response.data.bankAccountHolder || '',
+      });
+    });
+  }, []);
 
   // Active navigation tab
   const [activeTab, setActiveTab] = useState<'beranda' | 'stok' | 'tagihan' | 'riwayat' | 'profil'>(() => {
@@ -136,7 +145,7 @@ export const SellerPortal: React.FC<SellerPortalProps> = ({ onLogout }) => {
       totalTagihan,
       tagihanBelumDibayar,
       totalSudahDibayar,
-      totalStokPcs: totalStokPcs || 43,
+      totalStokPcs,
       closestDue,
     };
   }, [sellerInvoices, myConsignedItems]);
@@ -171,7 +180,7 @@ export const SellerPortal: React.FC<SellerPortalProps> = ({ onLogout }) => {
   }, [sellerInvoices]);
 
   const handleCopyAccount = () => {
-    navigator.clipboard.writeText('5210892234');
+    navigator.clipboard.writeText(paymentSettings.accountNumber);
     setCopiedBank(true);
     setTimeout(() => setCopiedBank(false), 2000);
   };
@@ -480,10 +489,10 @@ export const SellerPortal: React.FC<SellerPortalProps> = ({ onLogout }) => {
 
                   <div className="p-3 bg-white rounded-lg border border-purple-200 font-mono-num">
                     <p className="font-extrabold text-sm text-[#10241D]">
-                      BCA: 521-089-2234
+                      {paymentSettings.bankName || 'Bank belum diatur'}: {paymentSettings.accountNumber || '-'}
                     </p>
                     <p className="text-xs text-stone-600 font-sans mt-0.5 font-medium">
-                      a.n Tino (Owner Tino Underwear)
+                      a.n {paymentSettings.accountHolder || '-'}
                     </p>
                   </div>
 
@@ -499,33 +508,18 @@ export const SellerPortal: React.FC<SellerPortalProps> = ({ onLogout }) => {
                   </h4>
 
                   <div className="space-y-2.5 text-xs">
-                    <div className="flex items-start gap-2.5">
-                      <div className="w-6 h-6 rounded-full bg-emerald-100 text-[#047857] flex items-center justify-center shrink-0 mt-0.5">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
+                    {paymentHistory[0] ? (
+                      <div className="flex items-start gap-2.5">
+                        <div className="w-6 h-6 rounded-full bg-emerald-100 text-[#047857] flex items-center justify-center shrink-0 mt-0.5"><CheckCircle2 className="w-3.5 h-3.5" /></div>
+                        <div><p className="font-semibold text-stone-900">Pembayaran cicilan tercatat</p><p className="text-[11px] text-stone-500">{paymentHistory[0].invoiceNumber} · Rp {paymentHistory[0].amount.toLocaleString('id-ID')}</p></div>
                       </div>
-                      <div>
-                        <p className="font-semibold text-stone-900">
-                          Setoran Cicilan Tervalidasi
-                        </p>
-                        <p className="text-[11px] text-stone-500 font-mono-num">
-                          Rp 350.000 · Kasir: Siti Rahma
-                        </p>
+                    ) : <p className="text-stone-500">Belum ada pembayaran cicilan.</p>}
+                    {sellerInvoices[0] && (
+                      <div className="flex items-start gap-2.5 pt-2 border-t border-dashed border-stone-100">
+                        <div className="w-6 h-6 rounded-full bg-purple-100 text-[#6D28D9] flex items-center justify-center shrink-0 mt-0.5"><Package className="w-3.5 h-3.5" /></div>
+                        <div><p className="font-semibold text-stone-900">Faktur terbaru</p><p className="text-[11px] text-stone-500">{sellerInvoices[0].invoiceNumber} · Sisa Rp {sellerInvoices[0].remainingBalance.toLocaleString('id-ID')}</p></div>
                       </div>
-                    </div>
-
-                    <div className="flex items-start gap-2.5 pt-2 border-t border-dashed border-stone-100">
-                      <div className="w-6 h-6 rounded-full bg-purple-100 text-[#6D28D9] flex items-center justify-center shrink-0 mt-0.5">
-                        <Package className="w-3.5 h-3.5" />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-stone-900">
-                          Faktur Barang Tempo Aktif
-                        </p>
-                        <p className="text-[11px] text-stone-500 font-mono-num">
-                          #INV-20261004-001 (Kranji, Bekasi)
-                        </p>
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -596,7 +590,8 @@ export const SellerPortal: React.FC<SellerPortalProps> = ({ onLogout }) => {
                       <tbody className="divide-y divide-stone-100">
                         {filteredStock.map((item) => {
                           const margin = item.recommendedSellPrice - item.unitPrice;
-                          const sampleImg = getProductSampleImage('', item.productSku);
+                          const catalogProduct = products.find((product) => product.id === item.productId);
+                          const sampleImg = getProductDisplayImage(catalogProduct || { category: 'Lain-lain' });
                           return (
                             <tr key={item.id} className="hover:bg-stone-50/70 transition-colors">
                               <td className="py-3.5 px-4">
@@ -661,7 +656,7 @@ export const SellerPortal: React.FC<SellerPortalProps> = ({ onLogout }) => {
                     Produk Tersedia untuk Pengambilan Barang Tempo
                   </h3>
                   <p className="text-xs text-[#4B6359] mt-0.5">
-                    Seluruh produk dan stok realtime yang tersinkronisasi langsung dari sistem kasir POS dan pantauan Owner.
+                    Seluruh produk dan stok yang dimuat dari database TUMIN dan diperbarui secara berkala.
                   </p>
                 </div>
 
@@ -682,7 +677,7 @@ export const SellerPortal: React.FC<SellerPortalProps> = ({ onLogout }) => {
 
               {/* Category Pills */}
               <div className="flex items-center gap-2 overflow-x-auto pb-1">
-                {['Semua', 'CD Pria', 'CD Wanita', 'Anak-Anak', 'Korset'].map((cat) => (
+                {['Semua', 'CD Pria', 'CD Wanita', 'Anak-Anak', 'Korset', 'Bra', 'Kaos Kaki', 'Lingerie', 'Lain-lain'].map((cat) => (
                   <button
                     key={cat}
                     onClick={() => setCatalogCategory(cat)}
@@ -705,7 +700,7 @@ export const SellerPortal: React.FC<SellerPortalProps> = ({ onLogout }) => {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {filteredAvailableProducts.map((prod) => {
-                    const sampleImage = getProductSampleImage(prod.category, prod.sku);
+                    const productImage = getProductDisplayImage(prod);
                     const isOutOfStock = prod.stock <= 0;
                     const isLowStock = prod.stock > 0 && prod.stock <= prod.minStock;
 
@@ -722,7 +717,7 @@ export const SellerPortal: React.FC<SellerPortalProps> = ({ onLogout }) => {
                           {/* Image Thumbnail with Category Badge */}
                           <div className="relative aspect-square w-full bg-stone-100 overflow-hidden border-b border-stone-100">
                             <img
-                              src={sampleImage}
+                              src={productImage}
                               alt={prod.name}
                               className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                             />
@@ -957,14 +952,14 @@ export const SellerPortal: React.FC<SellerPortalProps> = ({ onLogout }) => {
                 Riwayat Pembayaran & Setoran Cicilan
               </h2>
               <p className="text-xs text-[#4B6359] mt-0.5">
-                Semua uang setoran yang telah diserahkan dan divalidasi oleh kasir Tino Underwear Bekasi.
+                Riwayat pembayaran cicilan yang telah dicatat oleh Owner atau Kasir di TUMIN.
               </p>
             </div>
 
             <div className="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
               <div className="p-4 border-b border-stone-200 bg-stone-50 flex items-center justify-between">
                 <span className="text-xs font-semibold text-stone-700">
-                  Log Setoran Valid ({paymentHistory.length} Kali)
+                  Riwayat Pembayaran ({paymentHistory.length} catatan)
                 </span>
                 <span className="text-xs font-mono-num font-bold text-[#047857]">
                   Total Terbayar: Rp {metrics.totalSudahDibayar.toLocaleString('id-ID')}
@@ -1103,7 +1098,7 @@ export const SellerPortal: React.FC<SellerPortalProps> = ({ onLogout }) => {
                       <strong>Retur Barang Rusak:</strong> Produk cacat produksi dapat ditukar langsung ke toko pusat dengan SKU sejenis.
                     </li>
                     <li>
-                      <strong>Metode Pembayaran:</strong> Bisa setor tunai langsung di kasir toko atau transfer bank ke rekening BCA Owner Tino.
+                      <strong>Metode Pembayaran:</strong> Bisa setor tunai langsung di kasir toko atau transfer bank ke rekening pembayaran toko yang tercantum pada profil pembayaran.
                     </li>
                     <li>
                       <strong>Penambahan Stok:</strong> Dapat diajukan setiap hari kerja melalui WhatsApp admin gudang.
@@ -1272,7 +1267,7 @@ export const SellerPortal: React.FC<SellerPortalProps> = ({ onLogout }) => {
                 <div className="p-3 bg-purple-50 rounded-lg border border-purple-200 text-[11px] text-purple-950 flex items-center justify-between">
                   <div>
                     <span className="font-semibold block text-[#6D28D9]">Transfer ke Rekening Owner:</span>
-                    <span className="font-mono-num font-bold">BCA 521-089-2234 a.n Tino</span>
+                    <span className="font-mono-num font-bold">{paymentSettings.bankName || 'Bank belum diatur'} {paymentSettings.accountNumber} a.n {paymentSettings.accountHolder}</span>
                   </div>
                   <button
                     type="button"

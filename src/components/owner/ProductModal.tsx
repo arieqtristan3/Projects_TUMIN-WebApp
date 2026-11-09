@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
-import { Product, ProductCategory } from '../../types';
-import { X, Layers, AlertCircle, Package, SlidersHorizontal, Check } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Product, ProductCategoryValue } from '../../types';
+import { getProductDisplayImage } from '../../utils/productImages';
+import { X, Layers, AlertCircle, Package, SlidersHorizontal, Check, Upload, Image as ImageIcon, Trash2 } from 'lucide-react';
 
 interface ProductModalProps {
   isOpen: boolean;
   product?: Product | null; // If null, mode is Add; otherwise Edit
   onClose: () => void;
-  onSave: (productData: Omit<Product, 'id' | 'lastUpdated'>) => void;
+  onSave: (productData: Omit<Product, 'id' | 'lastUpdated'>) => void | Promise<void>;
 }
 
 export const ProductModal: React.FC<ProductModalProps> = ({
@@ -17,7 +18,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
 }) => {
   const [sku, setSku] = useState(product?.sku || '');
   const [name, setName] = useState(product?.name || '');
-  const [category, setCategory] = useState<'CD Pria' | 'CD Wanita' | 'Anak-Anak' | 'Korset'>(
+  const [category, setCategory] = useState<ProductCategoryValue>(
     product?.category || 'CD Pria'
   );
   const [price, setPrice] = useState<number | ''>(product ? product.price : '');
@@ -26,18 +27,70 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   const [minStock, setMinStock] = useState<number | ''>(product ? product.minStock : 10);
   const [unit, setUnit] = useState(product?.unit || 'pcs');
   const [description, setDescription] = useState(product?.description || '');
+  const [image, setImage] = useState<string>(product?.image || '');
   const [error, setError] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Modal selalu ter-mount; sinkronkan state setiap kali dibuka agar form edit
+  // benar-benar menampilkan produk yang dipilih, bukan nilai awal dari render pertama.
+  useEffect(() => {
+    if (!isOpen) return;
+    setSku(product?.sku || '');
+    setName(product?.name || '');
+    setCategory(product?.category || 'CD Pria');
+    setPrice(product ? product.price : '');
+    setCostPrice(product ? product.costPrice : '');
+    setStock(product ? product.stock : '');
+    setMinStock(product ? product.minStock : 10);
+    setUnit(product?.unit || 'pcs');
+    setDescription(product?.description || '');
+    setImage(product?.image || '');
+    setError('');
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }, [isOpen, product]);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setError('File yang diunggah harus berupa gambar (JPG, PNG, WebP).');
+      return;
+    }
+
+    if (file.size > 3 * 1024 * 1024) {
+      setError('Ukuran gambar maksimal 3MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        setImage(reader.result);
+        setError('');
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveImage = () => {
+    setImage('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!sku.trim() || !name.trim() || price === '' || costPrice === '' || stock === '') {
       setError('Harap lengkapi semua bidang wajib.');
       return;
     }
 
-    onSave({
+    try {
+      await onSave({
       sku: sku.trim().toUpperCase(),
       name: name.trim(),
       category,
@@ -47,8 +100,12 @@ export const ProductModal: React.FC<ProductModalProps> = ({
       minStock: Number(minStock || 10),
       unit,
       description,
-    });
-    onClose();
+      image: image.trim() !== '' ? image : undefined,
+      });
+      onClose();
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Produk gagal disimpan.');
+    }
   };
 
   return (
@@ -108,7 +165,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
               <select
                 value={category}
                 onChange={(e) =>
-                  setCategory(e.target.value as 'CD Pria' | 'CD Wanita' | 'Anak-Anak' | 'Korset')
+                  setCategory(e.target.value as ProductCategoryValue)
                 }
                 className="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:border-teal-600 focus:bg-white transition-all"
               >
@@ -116,6 +173,10 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                 <option value="CD Wanita">CD Wanita</option>
                 <option value="Anak-Anak">Anak-Anak</option>
                 <option value="Korset">Korset</option>
+                <option value="Bra">Bra</option>
+                <option value="Kaos Kaki">Kaos Kaki</option>
+                <option value="Lingerie">Lingerie</option>
+                <option value="Lain-lain">Lain-lain</option>
               </select>
             </div>
           </div>
@@ -173,11 +234,12 @@ export const ProductModal: React.FC<ProductModalProps> = ({
           <div className="grid grid-cols-3 gap-3.5">
             <div>
               <label className="block text-xs font-semibold text-gray-700 mb-1">
-                Stok Awal *
+                {product ? 'Stok Saat Ini (ubah melalui Kontrol Stok)' : 'Stok Awal *'}
               </label>
               <input
                 type="number"
                 value={stock}
+                disabled={!!product}
                 onChange={(e) =>
                   setStock(e.target.value === '' ? '' : Number(e.target.value))
                 }
@@ -231,6 +293,69 @@ export const ProductModal: React.FC<ProductModalProps> = ({
             />
           </div>
 
+          {/* Foto / Gambar Produk */}
+          <div className="pt-2 border-t border-gray-100">
+            <label className="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center justify-between">
+              <span className="flex items-center gap-1.5">
+                <ImageIcon className="w-3.5 h-3.5 text-teal-600" />
+                <span>Foto / Gambar Produk</span>
+                <span className="text-[11px] font-normal text-gray-400">(Opsional)</span>
+              </span>
+              {image && (
+                <button
+                  type="button"
+                  onClick={handleRemoveImage}
+                  className="text-[11px] text-red-600 hover:text-red-700 font-normal flex items-center gap-1 cursor-pointer"
+                >
+                  <Trash2 className="w-3 h-3" />
+                  Hapus Foto
+                </button>
+              )}
+            </label>
+
+            <div className="flex items-center gap-3">
+              {/* Preview Box */}
+              <div className="w-16 h-16 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 flex items-center justify-center overflow-hidden shrink-0 relative group">
+                <img
+                  src={image || getProductDisplayImage({ category, sku })}
+                  alt="Preview Produk"
+                  className="w-full h-full object-cover"
+                />
+                {image && (
+                  <span className="absolute bottom-0 inset-x-0 bg-teal-600/90 text-[9px] text-white text-center py-0.5 font-medium">
+                    Kustom
+                  </span>
+                )}
+              </div>
+
+              {/* Upload Controls */}
+              <div className="flex-1 space-y-1.5">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/png, image/jpeg, image/jpg, image/webp"
+                  onChange={handleImageFileChange}
+                  className="hidden"
+                  id="product-photo-upload"
+                />
+
+                <div className="flex items-center gap-2">
+                  <label
+                    htmlFor="product-photo-upload"
+                    className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs border border-gray-200"
+                  >
+                    <Upload className="w-3.5 h-3.5 text-gray-600" />
+                    <span>{image ? 'Ganti Foto' : 'Unggah Foto dari Perangkat'}</span>
+                  </label>
+                </div>
+
+                <p className="text-[10px] text-gray-400 leading-tight">
+                  Format JPG, PNG, atau WebP (maks 3MB). Jika kosong, sistem otomatis menggunakan ikon visual kategori pakaian dalam.
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div className="pt-3 border-t border-gray-200 flex items-center justify-end gap-2.5">
             <button
               type="button"
@@ -256,7 +381,7 @@ interface AdjustStockModalProps {
   isOpen: boolean;
   product: Product | null;
   onClose: () => void;
-  onSave: (newStock: number) => void;
+  onSave: (newStock: number, reason?: string) => void | Promise<void>;
 }
 
 export const AdjustStockModal: React.FC<AdjustStockModalProps> = ({
@@ -267,13 +392,23 @@ export const AdjustStockModal: React.FC<AdjustStockModalProps> = ({
 }) => {
   const [stock, setStock] = useState<number | ''>(product ? product.stock : '');
   const [reason, setReason] = useState('Stock opname berkala');
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!isOpen || !product) return;
+    setStock(product.stock);
+    setReason('Stock opname berkala');
+    setError('');
+  }, [isOpen, product]);
 
   if (!isOpen || !product) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (stock === '') return;
-    onSave(Number(stock));
+    setError('');
+    try { await onSave(Number(stock), reason); }
+    catch (saveError) { setError(saveError instanceof Error ? saveError.message : 'Stok gagal disimpan.'); }
   };
 
   return (
@@ -344,6 +479,7 @@ export const AdjustStockModal: React.FC<AdjustStockModalProps> = ({
             </select>
           </div>
 
+          {error && <p className="text-xs text-red-700">{error}</p>}
           <div className="pt-3 border-t border-gray-200 flex items-center justify-end gap-2.5">
             <button
               type="button"

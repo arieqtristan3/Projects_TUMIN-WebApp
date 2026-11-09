@@ -9,9 +9,8 @@ export const PublicPortal: React.FC = () => {
   const { authenticateUser } = useApp();
 
   const [selectedRole, setSelectedRole] = useState<UserRole>('owner');
-  const [identifier, setIdentifier] = useState('owner@tinounderwear.id');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -29,13 +28,7 @@ export const PublicPortal: React.FC = () => {
     setSelectedRole(role);
     setErrorMessage('');
     setPassword('');
-    if (role === 'owner') {
-      setIdentifier('owner@tinounderwear.id');
-    } else if (role === 'kasir') {
-      setIdentifier('kasir');
-    } else {
-      setIdentifier('budi88');
-    }
+    setIdentifier('');
   };
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
@@ -212,10 +205,10 @@ export const PublicPortal: React.FC = () => {
                       }}
                       placeholder={
                         selectedRole === 'seller'
-                          ? 'budi88 atau 0812-8899-7711'
+                          ? 'Username atau nomor telepon Seller'
                           : selectedRole === 'kasir'
-                          ? 'kasir'
-                          : 'owner@tinounderwear.id'
+                          ? 'Username Kasir'
+                          : 'Email atau username Owner'
                       }
                       className="w-full pl-8 pr-3 py-1.5 text-sm text-stone-100 input-stitch-dark transition-colors font-sans"
                       required
@@ -241,19 +234,6 @@ export const PublicPortal: React.FC = () => {
                       required
                     />
                   </div>
-                </div>
-
-                {/* Ingat saya */}
-                <div className="pt-0.5">
-                  <label className="flex items-center gap-1.5 text-stone-300 cursor-pointer text-[11px]">
-                    <input
-                      type="checkbox"
-                      checked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
-                      className="rounded border-[#A78BFA]/40 bg-[#1A1433] text-[#047857] focus:ring-[#047857] text-xs"
-                    />
-                    <span>Ingat saya di sesi ini</span>
-                  </label>
                 </div>
 
                 {/* Primary button "Masuk sebagai [role]" */}
@@ -295,16 +275,6 @@ export const PublicPortal: React.FC = () => {
                       Daftar sebagai Seller (Mitra Baru Tanpa Email)
                     </button>
 
-                    <div className="text-center pt-1">
-                      <a
-                        href="https://wa.me/6281298765432?text=Halo%20Owner%20Tino%20Underwear,%20saya%20mitra%20seller%20ingin%20menanyakan%20akun%20login%20saya"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-[11px] text-stone-400 hover:text-emerald-300 underline inline-flex items-center gap-1 transition-colors"
-                      >
-                        Lupa kata sandi? Hubungi Owner via WhatsApp
-                      </a>
-                    </div>
                   </div>
                 )}
               </form>

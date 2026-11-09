@@ -24,12 +24,37 @@ import {
 } from 'lucide-react';
 
 export const FinancialReports: React.FC = () => {
-  const { invoices, products, sellers } = useApp();
-
-  const [timeframe, setTimeframe] = useState<'30days' | 'thisMonth' | 'all'>('thisMonth');
+  const { invoices, currentUser } = useApp();
   const [selectedProofInvoice, setSelectedProofInvoice] = useState<any | null>(null);
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
   const [pdfPeriod, setPdfPeriod] = useState<'thisMonth' | '30days' | 'all'>('thisMonth');
+  const pdfInvoices = useMemo(() => {
+    if (pdfPeriod === 'all') return invoices;
+    const now = new Date();
+    const start = pdfPeriod === 'thisMonth'
+      ? new Date(now.getFullYear(), now.getMonth(), 1)
+      : new Date(now.getFullYear(), now.getMonth(), now.getDate() - 29);
+    return invoices.filter((invoice) => {
+      const date = new Date(invoice.date);
+      return !Number.isNaN(date.getTime()) && date >= start && date <= now;
+    });
+  }, [invoices, pdfPeriod]);
+  const pdfFinancialData = useMemo(() => {
+    const netSales = pdfInvoices.reduce((sum, invoice) => sum + invoice.total, 0);
+    const cashSales = pdfInvoices.filter((invoice) => invoice.paymentMethod === 'Tunai').reduce((sum, invoice) => sum + invoice.total, 0);
+    const bankSales = pdfInvoices.filter((invoice) => invoice.paymentMethod === 'Transfer Bank').reduce((sum, invoice) => sum + invoice.total, 0);
+    const creditSales = pdfInvoices.filter((invoice) => invoice.paymentMethod === 'Kredit').reduce((sum, invoice) => sum + invoice.total, 0);
+    const creditPaid = pdfInvoices.filter((invoice) => invoice.paymentMethod === 'Kredit').reduce((sum, invoice) => sum + invoice.amountPaid, 0);
+    const remainingReceivables = pdfInvoices.filter((invoice) => invoice.paymentMethod === 'Kredit').reduce((sum, invoice) => sum + invoice.remainingBalance, 0);
+    let totalEstimatedHpp = 0; let hppItemsMissing = 0;
+    for (const invoice of pdfInvoices) for (const item of invoice.items) {
+      if (typeof item.costPrice === 'number' && Number.isFinite(item.costPrice)) totalEstimatedHpp += item.costPrice * item.quantity;
+      else hppItemsMissing += 1;
+    }
+    const grossProfit = hppItemsMissing === 0 ? netSales - totalEstimatedHpp : null;
+    const profitMargin = grossProfit !== null && netSales > 0 ? ((grossProfit / netSales) * 100).toFixed(1) : null;
+    return { netSales, cashSales, bankSales, creditSales, creditPaid, remainingReceivables, totalEstimatedHpp, grossProfit, profitMargin, hppItemsMissing };
+  }, [pdfInvoices]);
 
   // Compute metrics
   const financialData = useMemo(() => {
@@ -37,6 +62,7 @@ export const FinancialReports: React.FC = () => {
     let totalDiscount = 0;
     let netSales = 0;
     let totalEstimatedHpp = 0;
+    let hppItemsMissing = 0;
 
     for (const inv of invoices) {
       grossSales += inv.subtotal;
@@ -44,14 +70,16 @@ export const FinancialReports: React.FC = () => {
       netSales += inv.total;
 
       for (const item of inv.items) {
-        const prod = products.find((p) => p.id === item.productId);
-        const hpp = prod ? prod.costPrice : item.unitPrice * 0.6;
-        totalEstimatedHpp += hpp * item.quantity;
+        if (typeof item.costPrice === 'number' && Number.isFinite(item.costPrice)) {
+          totalEstimatedHpp += item.costPrice * item.quantity;
+        } else {
+          hppItemsMissing += 1;
+        }
       }
     }
 
-    const grossProfit = Math.max(0, netSales - totalEstimatedHpp);
-    const profitMargin = netSales > 0 ? ((grossProfit / netSales) * 100).toFixed(1) : '0';
+    const grossProfit = hppItemsMissing === 0 ? netSales - totalEstimatedHpp : null;
+    const profitMargin = grossProfit !== null && netSales > 0 ? ((grossProfit / netSales) * 100).toFixed(1) : null;
 
     const cashSales = invoices
       .filter((i) => i.paymentMethod === 'Tunai')
@@ -78,6 +106,7 @@ export const FinancialReports: React.FC = () => {
       totalDiscount,
       netSales,
       totalEstimatedHpp,
+      hppItemsMissing,
       grossProfit,
       profitMargin,
       cashSales,
@@ -86,7 +115,7 @@ export const FinancialReports: React.FC = () => {
       creditPaid,
       remainingReceivables,
     };
-  }, [invoices, products]);
+  }, [invoices]);
 
   // Export CSV / Excel function
   const handleExportCSV = () => {
@@ -142,7 +171,7 @@ export const FinancialReports: React.FC = () => {
       year: 'numeric',
     });
 
-    const rowsHtml = invoices
+    const rowsHtml = pdfInvoices
       .map(
         (inv) => `
         <tr>
@@ -188,39 +217,38 @@ export const FinancialReports: React.FC = () => {
     <div>
       <h1 class="title">TUMIN</h1>
       <p class="subtitle">Tino Underwear Information System</p>
-      <p class="meta">Toko Pusat Bekasi • Terminal Kasir POS-01 & Distributor Pakaian Dalam</p>
-      <p class="meta">Alamat: Ruko Sentra Niaga Blok B-12, Bekasi Utara • Telp/WA: 0812-9844-3321</p>
+      <p class="meta">Laporan dibuat dari data faktur tersimpan di PostgreSQL.</p>
     </div>
     <div style="text-align: right;">
       <h3 style="margin: 0; color: #047857; font-size: 14px;">REKAPITULASI LAPORAN KEUANGAN</h3>
       <p class="meta" style="margin-top: 4px;">No. Dokumen: <strong>REKAP-FIN-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}</strong></p>
       <p class="meta">Tanggal Cetak: <strong>${todayStr}</strong></p>
-      <p class="meta">Otorisasi: <strong>Pak Tino (Owner)</strong></p>
+      <p class="meta">Dicetak oleh: <strong>${currentUser?.name || 'Owner TUMIN'}</strong></p>
     </div>
   </div>
 
-  <div class="badge">DOKUMEN RESMI REKAPITULASI KEUANGAN & LABA RUGI UMKM</div>
+  <div class="badge">LAPORAN INTERNAL REKAPITULASI KEUANGAN</div>
 
   <div class="grid">
     <div class="card" style="border-top: 3px solid #059669;">
       <div class="card-title">Omzet Penjualan Bersih</div>
-      <div class="card-val" style="color: #059669;">Rp ${financialData.netSales.toLocaleString('id-ID')}</div>
-      <div class="meta" style="margin-top: 4px;">Total dari ${invoices.length} transaksi</div>
+      <div class="card-val" style="color: #059669;">Rp ${pdfFinancialData.netSales.toLocaleString('id-ID')}</div>
+      <div class="meta" style="margin-top: 4px;">Total dari ${pdfInvoices.length} transaksi</div>
     </div>
     <div class="card" style="border-top: 3px solid #6b7280;">
-      <div class="card-title">Estimasi HPP (Modal)</div>
-      <div class="card-val">Rp ${financialData.totalEstimatedHpp.toLocaleString('id-ID')}</div>
-      <div class="meta" style="margin-top: 4px;">Bahan baku & konveksi</div>
+      <div class="card-title">HPP Tercatat</div>
+      <div class="card-val">Rp ${pdfFinancialData.totalEstimatedHpp.toLocaleString('id-ID')}</div>
+      <div class="meta" style="margin-top: 4px;">${pdfFinancialData.hppItemsMissing > 0 ? `${pdfFinancialData.hppItemsMissing} baris faktur belum memiliki snapshot HPP` : 'HPP saat transaksi'}</div>
     </div>
     <div class="card" style="border-top: 3px solid #7c3aed;">
       <div class="card-title">Laba Kotor (Gross Profit)</div>
-      <div class="card-val" style="color: #7c3aed;">Rp ${financialData.grossProfit.toLocaleString('id-ID')}</div>
-      <div class="meta" style="margin-top: 4px; font-weight: bold; color: #6d28d9;">Margin: ${financialData.profitMargin}%</div>
+      <div class="card-val" style="color: #7c3aed;">Rp ${pdfFinancialData.grossProfit === null ? 'Belum tersedia — HPP historis belum lengkap' : pdfFinancialData.grossProfit.toLocaleString('id-ID')}</div>
+      <div class="meta" style="margin-top: 4px; font-weight: bold; color: #6d28d9;">Margin: ${pdfFinancialData.profitMargin === null ? 'Belum tersedia' : pdfFinancialData.profitMargin + '%'}</div>
     </div>
     <div class="card" style="border-top: 3px solid #e11d48;">
       <div class="card-title">Sisa Piutang Berjalan</div>
-      <div class="card-val" style="color: #e11d48;">Rp ${financialData.remainingReceivables.toLocaleString('id-ID')}</div>
-      <div class="meta" style="margin-top: 4px;">Tertagih: Rp ${financialData.creditPaid.toLocaleString('id-ID')}</div>
+      <div class="card-val" style="color: #e11d48;">Rp ${pdfFinancialData.remainingReceivables.toLocaleString('id-ID')}</div>
+      <div class="meta" style="margin-top: 4px;">Tertagih: Rp ${pdfFinancialData.creditPaid.toLocaleString('id-ID')}</div>
     </div>
   </div>
 
@@ -245,14 +273,14 @@ export const FinancialReports: React.FC = () => {
 
   <div class="sign-box">
     <div style="width: 220px;">
-      <p>Petugas Administrasi & Kasir</p>
+      <p>Sumber Data</p>
       <div class="sign-line"></div>
-      <p><strong>( Kasir POS Tino Underwear )</strong></p>
+      <p><strong>Faktur PostgreSQL</strong></p>
     </div>
     <div style="width: 220px;">
-      <p>Mengetahui & Menyetujui, Owner</p>
+      <p>Dicetak oleh</p>
       <div class="sign-line"></div>
-      <p><strong>( Pak Tino )</strong></p>
+      <p><strong>${currentUser?.name || 'Owner TUMIN'}</strong></p>
     </div>
   </div>
 </body>
@@ -317,13 +345,13 @@ export const FinancialReports: React.FC = () => {
 
         <div className="bg-white p-4 rounded-lg border border-stone-200 shadow-xs">
           <span className="text-xs text-[#4B6359] block font-medium">
-            Estimasi Modal (HPP)
+            HPP Tercatat
           </span>
           <span className="text-lg sm:text-2xl font-bold font-mono-num text-stone-700 block mt-0.5">
             Rp {financialData.totalEstimatedHpp.toLocaleString('id-ID')}
           </span>
           <span className="text-[11px] text-stone-500 mt-1 block">
-            Harga pokok kain & produksi
+            {financialData.hppItemsMissing > 0 ? `${financialData.hppItemsMissing} baris faktur belum memiliki snapshot HPP` : 'HPP saat transaksi'}
           </span>
         </div>
 
@@ -332,10 +360,10 @@ export const FinancialReports: React.FC = () => {
             Estimasi Laba Kotor
           </span>
           <span className="text-lg sm:text-2xl font-bold font-mono-num text-[#6D28D9] block mt-0.5">
-            Rp {financialData.grossProfit.toLocaleString('id-ID')}
+            {financialData.grossProfit === null ? 'Belum tersedia — HPP historis belum lengkap' : `Rp ${financialData.grossProfit.toLocaleString('id-ID')}`}
           </span>
           <span className="text-[11px] text-purple-700 font-semibold mt-1 block">
-            Margin: {financialData.profitMargin}%
+            Margin: {financialData.profitMargin === null ? 'Belum tersedia' : `${financialData.profitMargin}%`}
           </span>
         </div>
 
@@ -368,13 +396,13 @@ export const FinancialReports: React.FC = () => {
 
         <ChamferCard dark={false} className="p-4 border border-purple-200">
           <span className="text-xs font-semibold text-[#6D28D9] block">
-            2. Transfer Bank (BCA)
+            2. Transfer Bank
           </span>
           <p className="text-lg font-bold font-mono-num text-[#10241D] mt-1">
             Rp {financialData.bankSales.toLocaleString('id-ID')}
           </p>
           <p className="text-[11px] text-stone-500 mt-1">
-            Dana masuk rekening BCA Tino Underwear
+            Dana masuk ke rekening bank toko.
           </p>
         </ChamferCard>
 
@@ -418,7 +446,7 @@ export const FinancialReports: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-100">
-              {invoices.map((inv) => (
+              {pdfInvoices.map((inv) => (
                 <tr key={inv.id} className="hover:bg-stone-50/80">
                   <td className="py-2.5 px-3 font-mono-num font-bold text-[#10241D]">
                     {inv.invoiceNumber}
@@ -526,7 +554,7 @@ export const FinancialReports: React.FC = () => {
                         : 'text-stone-600 hover:bg-stone-100'
                     }`}
                   >
-                    Bulan Ini (Okt 2026)
+                    Bulan Ini
                   </button>
                   <button
                     type="button"
@@ -554,7 +582,7 @@ export const FinancialReports: React.FC = () => {
               </div>
 
               <span className="text-[11px] text-emerald-800 font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                Total {invoices.length} Faktur Siap Cetak
+                Total {pdfInvoices.length} Faktur Siap Cetak
               </span>
             </div>
 
@@ -568,17 +596,17 @@ export const FinancialReports: React.FC = () => {
                       TUMIN
                     </span>
                     <span className="bg-green-100 text-green-800 text-[10px] font-bold px-2 py-0.5 rounded border border-green-200">
-                      OFFICIAL INFORMATION SYSTEM
+                      LAPORAN INTERNAL
                     </span>
                   </div>
                   <p className="text-sm font-bold text-gray-800 mt-0.5">
                     Tino Underwear Information System
                   </p>
                   <p className="text-xs text-gray-600">
-                    Toko Pusat Bekasi • Terminal Kasir POS-01 &amp; Distributor Garment
+                    Laporan berdasarkan faktur tersimpan di PostgreSQL
                   </p>
                   <p className="text-[11px] text-gray-500">
-                    Ruko Sentra Niaga Blok B-12, Bekasi Utara • WA/Telp: 0812-9844-3321
+                    Laporan berdasarkan data faktur yang tersimpan di PostgreSQL
                   </p>
                 </div>
 
@@ -587,13 +615,13 @@ export const FinancialReports: React.FC = () => {
                     Rekapitulasi Laporan Keuangan
                   </div>
                   <p className="text-gray-600 font-mono text-[11px]">
-                    No. Dok: <strong>REKAP-FIN-202610-09</strong>
+                    No. Dok: <strong>REKAP-FIN-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}</strong>
                   </p>
                   <p className="text-gray-600">
-                    Periode: <strong>{pdfPeriod === 'thisMonth' ? 'Bulan Ini (Okt 2026)' : pdfPeriod === '30days' ? '30 Hari Terakhir' : 'Semua Waktu'}</strong>
+                    Periode: <strong>{pdfPeriod === 'thisMonth' ? 'Bulan Ini' : pdfPeriod === '30days' ? '30 Hari Terakhir' : 'Semua Waktu'}</strong>
                   </p>
                   <p className="text-gray-500 text-[11px]">
-                    Dicetak: {new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })} • Otorisasi: <strong>Pak Tino (Owner)</strong>
+                    Dicetak: {new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })} • Dicetak oleh: <strong>{currentUser?.name || 'Owner TUMIN'}</strong>
                   </p>
                 </div>
               </div>
@@ -602,10 +630,10 @@ export const FinancialReports: React.FC = () => {
               <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-md px-3.5 py-2 text-xs">
                 <span className="font-bold text-emerald-900 flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                  DOKUMEN RESMI REKAPITULASI KEUANGAN &amp; LABA RUGI USAHA
+                  LAPORAN INTERNAL REKAPITULASI KEUANGAN
                 </span>
                 <span className="text-emerald-700 font-mono text-[11px]">
-                  Status: Terverifikasi Sistem
+                  Sumber data: PostgreSQL
                 </span>
               </div>
 
@@ -614,40 +642,40 @@ export const FinancialReports: React.FC = () => {
                 <div className="p-3 bg-stone-50 rounded-lg border-t-2 border-[#047857] border-stone-200">
                   <span className="text-gray-500 block text-[11px] font-semibold uppercase">Omzet Bersih</span>
                   <span className="text-base sm:text-lg font-black text-[#047857] block mt-0.5">
-                    Rp {financialData.netSales.toLocaleString('id-ID')}
+                    Rp {pdfFinancialData.netSales.toLocaleString('id-ID')}
                   </span>
                   <span className="text-[10px] text-gray-500 block mt-1">
-                    {invoices.length} Faktur Tercatat
+                    {pdfInvoices.length} Faktur Tercatat
                   </span>
                 </div>
 
                 <div className="p-3 bg-stone-50 rounded-lg border-t-2 border-stone-500 border-stone-200">
-                  <span className="text-gray-500 block text-[11px] font-semibold uppercase">Estimasi Modal (HPP)</span>
+                  <span className="text-gray-500 block text-[11px] font-semibold uppercase">HPP Tercatat</span>
                   <span className="text-base sm:text-lg font-bold text-gray-800 block mt-0.5">
-                    Rp {financialData.totalEstimatedHpp.toLocaleString('id-ID')}
+                    Rp {pdfFinancialData.totalEstimatedHpp.toLocaleString('id-ID')}
                   </span>
                   <span className="text-[10px] text-gray-500 block mt-1">
-                    Biaya Pokok Produksi
+                    {pdfFinancialData.hppItemsMissing > 0 ? `${pdfFinancialData.hppItemsMissing} baris faktur belum memiliki snapshot HPP` : 'HPP saat transaksi'}
                   </span>
                 </div>
 
                 <div className="p-3 bg-purple-50/60 rounded-lg border-t-2 border-purple-600 border-purple-200">
                   <span className="text-purple-700 block text-[11px] font-semibold uppercase">Laba Kotor</span>
                   <span className="text-base sm:text-lg font-black text-purple-700 block mt-0.5">
-                    Rp {financialData.grossProfit.toLocaleString('id-ID')}
+                    {pdfFinancialData.grossProfit === null ? 'Belum tersedia — HPP historis belum lengkap' : `Rp ${pdfFinancialData.grossProfit.toLocaleString('id-ID')}`}
                   </span>
                   <span className="text-[10px] text-purple-700 font-bold block mt-1">
-                    Margin: {financialData.profitMargin}%
+                    Margin: {pdfFinancialData.profitMargin === null ? 'Belum tersedia' : `${pdfFinancialData.profitMargin}%`}
                   </span>
                 </div>
 
                 <div className="p-3 bg-rose-50/60 rounded-lg border-t-2 border-rose-600 border-rose-200">
                   <span className="text-rose-800 block text-[11px] font-semibold uppercase">Sisa Piutang</span>
                   <span className="text-base sm:text-lg font-black text-rose-700 block mt-0.5">
-                    Rp {financialData.remainingReceivables.toLocaleString('id-ID')}
+                    Rp {pdfFinancialData.remainingReceivables.toLocaleString('id-ID')}
                   </span>
                   <span className="text-[10px] text-gray-500 block mt-1">
-                    Tertagih: Rp {financialData.creditPaid.toLocaleString('id-ID')}
+                    Tertagih: Rp {pdfFinancialData.creditPaid.toLocaleString('id-ID')}
                   </span>
                 </div>
               </div>
@@ -661,19 +689,19 @@ export const FinancialReports: React.FC = () => {
                   <div className="p-2 bg-white rounded border border-stone-200">
                     <span className="text-gray-500 block text-[10px]">1. Kas Tunai (Laci Kasir)</span>
                     <span className="font-bold text-gray-900 text-xs">
-                      Rp {financialData.cashSales.toLocaleString('id-ID')}
+                      Rp {pdfFinancialData.cashSales.toLocaleString('id-ID')}
                     </span>
                   </div>
                   <div className="p-2 bg-white rounded border border-stone-200">
-                    <span className="text-gray-500 block text-[10px]">2. Transfer Rekening BCA</span>
+                    <span className="text-gray-500 block text-[10px]">2. Transfer Rekening Bank</span>
                     <span className="font-bold text-gray-900 text-xs">
-                      Rp {financialData.bankSales.toLocaleString('id-ID')}
+                      Rp {pdfFinancialData.bankSales.toLocaleString('id-ID')}
                     </span>
                   </div>
                   <div className="p-2 bg-white rounded border border-stone-200">
                     <span className="text-gray-500 block text-[10px]">3. Penjualan Tempo Kredit</span>
                     <span className="font-bold text-amber-800 text-xs">
-                      Rp {financialData.creditSales.toLocaleString('id-ID')}
+                      Rp {pdfFinancialData.creditSales.toLocaleString('id-ID')}
                     </span>
                   </div>
                 </div>
@@ -699,7 +727,7 @@ export const FinancialReports: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-stone-200 font-mono-num text-[11px]">
-                      {invoices.map((inv) => (
+                      {pdfInvoices.map((inv) => (
                         <tr key={inv.id}>
                           <td className="p-2.5 font-bold text-gray-900">{inv.invoiceNumber}</td>
                           <td className="p-2.5 text-gray-600">{inv.date}</td>
@@ -739,16 +767,16 @@ export const FinancialReports: React.FC = () => {
               {/* Tanda Tangan Pengesahan */}
               <div className="pt-8 grid grid-cols-2 text-center text-xs text-gray-700">
                 <div>
-                  <p className="font-semibold">Petugas Administrasi &amp; Kasir</p>
+                  <p className="font-semibold">Sumber Data</p>
                   <div className="h-14" />
-                  <p className="font-bold text-gray-900">( Kasir POS Tino Underwear )</p>
-                  <p className="text-[10px] text-gray-500">Terminal POS-01 Bekasi</p>
+                  <p className="font-bold text-gray-900">Faktur PostgreSQL</p>
+                  <p className="text-[10px] text-gray-500">Data transaksi tersimpan</p>
                 </div>
                 <div>
-                  <p className="font-semibold">Mengetahui &amp; Menyetujui,</p>
+                  <p className="font-semibold">Dicetak oleh</p>
                   <div className="h-14" />
-                  <p className="font-bold text-gray-900">( Pak Tino )</p>
-                  <p className="text-[10px] text-gray-500">Owner Tino Underwear</p>
+                  <p className="font-bold text-gray-900">{currentUser?.name || 'Owner TUMIN'}</p>
+                  <p className="text-[10px] text-gray-500">Pengguna yang sedang login</p>
                 </div>
               </div>
             </div>

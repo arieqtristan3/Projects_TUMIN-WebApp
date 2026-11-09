@@ -41,177 +41,12 @@ interface SalesTransactionRow {
   notes?: string;
 }
 
-// 24 realistic initial transactions matching the master design
-const SAMPLE_TRANSACTIONS: SalesTransactionRow[] = [
-  {
-    id: 'tx-01',
-    invoiceNumber: '#INV-20261008-024',
-    time: '11:15 WIB',
-    customerName: 'Pelanggan Ritel (Walk-in)',
-    isConsignment: false,
-    saleType: 'Kasir Toko',
-    qty: 3,
-    total: 135000,
-    paymentMethod: 'Tunai',
-    dotColor: 'green',
-    itemsSummary: '2x CD Pria Boxer (L), 1x Singlet Pria Ribbed (M)',
-  },
-  {
-    id: 'tx-02',
-    invoiceNumber: '#INV-20261008-023',
-    time: '10:45 WIB',
-    customerName: 'Nina Kurniawati (Toko Nina)',
-    customerInitials: 'NK',
-    isConsignment: true,
-    saleType: 'Mitra Seller',
-    qty: 50,
-    total: 1450000,
-    paymentMethod: 'Kredit / Tempo',
-    dotColor: 'purple',
-    itemsSummary: '30x CD Pria Boxer, 20x Celana Dalam Seamless',
-  },
-  {
-    id: 'tx-03',
-    invoiceNumber: '#INV-20261008-022',
-    time: '09:30 WIB',
-    customerName: 'Pelanggan Ritel (Walk-in)',
-    isConsignment: false,
-    saleType: 'Kasir Toko',
-    qty: 2,
-    total: 56000,
-    paymentMethod: 'QRIS / Transfer',
-    dotColor: 'green',
-    itemsSummary: '2x CD Wanita Katun Soft (M)',
-  },
-  {
-    id: 'tx-04',
-    invoiceNumber: '#INV-20261008-021',
-    time: '08:15 WIB',
-    customerName: 'Slamet Riyadi (Berkah UW)',
-    customerInitials: 'SR',
-    isConsignment: true,
-    saleType: 'Mitra Seller',
-    qty: 30,
-    total: 850000,
-    paymentMethod: 'Kredit / Tempo',
-    dotColor: 'purple',
-    itemsSummary: '20x CD Pria Boxer Katun, 10x Singlet Pria Ribbed',
-  },
-  {
-    id: 'tx-05',
-    invoiceNumber: '#INV-20261008-020',
-    time: '07:50 WIB',
-    customerName: 'Pelanggan Ritel (Walk-in)',
-    isConsignment: false,
-    saleType: 'Kasir Toko',
-    qty: 4,
-    total: 180000,
-    paymentMethod: 'Tunai',
-    dotColor: 'green',
-    itemsSummary: '4x CD Pria Boxer Bamboo (XL)',
-  },
-  {
-    id: 'tx-06',
-    invoiceNumber: '#INV-20261008-019',
-    time: '07:30 WIB',
-    customerName: 'Dewi Sartika (Grosir Jaya)',
-    customerInitials: 'DS',
-    isConsignment: true,
-    saleType: 'Mitra Seller',
-    qty: 25,
-    total: 625000,
-    paymentMethod: 'Tunai',
-    dotColor: 'purple',
-    itemsSummary: '25x Celana Dalam Anak Laki Katun',
-  },
-  {
-    id: 'tx-07',
-    invoiceNumber: '#INV-20261008-018',
-    time: '07:10 WIB',
-    customerName: 'Pelanggan Ritel (Walk-in)',
-    isConsignment: false,
-    saleType: 'Kasir Toko',
-    qty: 1,
-    total: 28000,
-    paymentMethod: 'QRIS / Transfer',
-    dotColor: 'green',
-    itemsSummary: '1x Singlet Pria Putih (L)',
-  },
-  {
-    id: 'tx-08',
-    invoiceNumber: '#INV-20261008-017',
-    time: '06:45 WIB',
-    customerName: 'Pelanggan Ritel (Walk-in)',
-    isConsignment: false,
-    saleType: 'Kasir Toko',
-    qty: 5,
-    total: 225000,
-    paymentMethod: 'Tunai',
-    dotColor: 'green',
-    itemsSummary: '5x CD Boxer Katun (M)',
-  },
-  {
-    id: 'tx-09',
-    invoiceNumber: '#INV-20261008-016',
-    time: '06:20 WIB',
-    customerName: 'Ahmad Fauzi (Toko Sentosa)',
-    customerInitials: 'AF',
-    isConsignment: true,
-    saleType: 'Mitra Seller',
-    qty: 15,
-    total: 420000,
-    paymentMethod: 'Kredit / Tempo',
-    dotColor: 'purple',
-    itemsSummary: '15x CD Pria Boxer Seamless',
-  },
-  {
-    id: 'tx-10',
-    invoiceNumber: '#INV-20261008-015',
-    time: '06:05 WIB',
-    customerName: 'Pelanggan Ritel (Walk-in)',
-    isConsignment: false,
-    saleType: 'Kasir Toko',
-    qty: 2,
-    total: 56000,
-    paymentMethod: 'Tunai',
-    dotColor: 'green',
-    itemsSummary: '2x CD Wanita High-Waist',
-  },
-  {
-    id: 'tx-11',
-    invoiceNumber: '#INV-20261008-014',
-    time: '05:45 WIB',
-    customerName: 'Pelanggan Ritel (Walk-in)',
-    isConsignment: false,
-    saleType: 'Kasir Toko',
-    qty: 3,
-    total: 135000,
-    paymentMethod: 'QRIS / Transfer',
-    dotColor: 'green',
-    itemsSummary: '3x CD Pria Boxer Katun (L)',
-  },
-  {
-    id: 'tx-12',
-    invoiceNumber: '#INV-20261008-013',
-    time: '05:30 WIB',
-    customerName: 'Hendra Gunawan (Outlet Barokah)',
-    customerInitials: 'HG',
-    isConsignment: true,
-    saleType: 'Mitra Seller',
-    qty: 20,
-    total: 580000,
-    paymentMethod: 'Kredit / Tempo',
-    dotColor: 'purple',
-    itemsSummary: '20x Singlet Pria Ribbed (XL)',
-  },
-];
-
 export const SalesReport: React.FC = () => {
-  const { invoices } = useApp();
+  const { invoices, products, currentUser } = useApp();
 
   // Search & Filter state
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedPeriod, setSelectedPeriod] = useState('Hari Ini (08 Okt 2026)');
+  const [selectedPeriod, setSelectedPeriod] = useState('Semua Periode');
   const [isPeriodDropdownOpen, setIsPeriodDropdownOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedTx, setSelectedTx] = useState<SalesTransactionRow | null>(null);
@@ -222,15 +57,34 @@ export const SalesReport: React.FC = () => {
   // Period options
   const periodOptions = [
     'Semua Periode',
-    'Hari Ini (24 Okt 2026)',
+    'Hari Ini',
     'Kemarin',
     '7 Hari Terakhir',
     'Bulan Ini',
   ];
 
-  // Merge real context invoices with sample transactions, placing REAL INVOICES AT THE VERY TOP
+  // Periode laporan diterapkan konsisten ke ringkasan, grafik, dan tabel.
+  const periodInvoices = useMemo(() => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+    const weekStart = new Date(today); weekStart.setDate(today.getDate() - 6);
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    return invoices.filter((invoice) => {
+      if (selectedPeriod === 'Semua Periode') return true;
+      const date = new Date(invoice.date);
+      if (Number.isNaN(date.getTime())) return false;
+      if (selectedPeriod === 'Hari Ini') return date >= today && date < new Date(today.getTime() + 86400000);
+      if (selectedPeriod === 'Kemarin') return date >= yesterday && date < today;
+      if (selectedPeriod === '7 Hari Terakhir') return date >= weekStart && date < new Date(today.getTime() + 86400000);
+      if (selectedPeriod === 'Bulan Ini') return date >= monthStart && date < new Date(now.getFullYear(), now.getMonth() + 1, 1);
+      return true;
+    });
+  }, [invoices, selectedPeriod]);
+
+  // Semua baris laporan berasal dari faktur yang dimuat dari PostgreSQL.
   const allTransactions = useMemo(() => {
-    const realMapped: SalesTransactionRow[] = invoices.map((inv, idx) => {
+    const realMapped: SalesTransactionRow[] = periodInvoices.map((inv, idx) => {
       const isConsign = !!inv.sellerId;
       const initials = inv.sellerName
         ? inv.sellerName
@@ -247,7 +101,7 @@ export const SalesReport: React.FC = () => {
             .getMinutes()
             .toString()
             .padStart(2, '0')} WIB`
-        : 'Baru saja';
+        : '—';
 
       const totalQty = inv.items.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -261,7 +115,7 @@ export const SalesReport: React.FC = () => {
         customerInitials: initials,
         isConsignment: isConsign,
         saleType: isConsign ? 'Mitra Seller' : 'Kasir Toko',
-        qty: totalQty || 1,
+        qty: totalQty,
         total: inv.total,
         paymentMethod:
           inv.paymentMethod === 'Kredit'
@@ -274,17 +128,13 @@ export const SalesReport: React.FC = () => {
           .map((it) => `${it.quantity}x ${it.productName}`)
           .join(', '),
         notes: (inv as any).notes || 'Transaksi tercatat di sistem POS Kasir',
-        isLive: true,
       };
     });
 
-    // PENTING: Transaksi real dari kasir ditaruh di URUTAN PALING ATAS!
-    const seenNumbers = new Set(realMapped.map((t) => t.invoiceNumber));
-    const sampleRemaining = SAMPLE_TRANSACTIONS.filter((t) => !seenNumbers.has(t.invoiceNumber));
-    return [...realMapped, ...sampleRemaining];
-  }, [invoices]);
+    return realMapped;
+  }, [periodInvoices]);
 
-  const realTransactionsCount = invoices.length;
+  const realTransactionsCount = periodInvoices.length;
 
   // Metrik ringkasan dinamis yang selalu sinkron dengan transaksi kasir
   const totalOmsetKotor = useMemo(() => {
@@ -296,18 +146,46 @@ export const SalesReport: React.FC = () => {
   }, [allTransactions]);
 
   const totalNotaCount = allTransactions.length;
+  const topProducts = useMemo(() => {
+    const totals = new Map<string, { name: string; quantity: number; revenue: number }>();
+    for (const invoice of periodInvoices) for (const item of invoice.items) {
+      const current = totals.get(item.productId) || { name: item.productName, quantity: 0, revenue: 0 };
+      current.quantity += item.quantity; current.revenue += item.subtotal; totals.set(item.productId, current);
+    }
+    return [...totals.values()].sort((a, b) => b.quantity - a.quantity).slice(0, 3);
+  }, [periodInvoices]);
+  const totalCashSales = periodInvoices.filter((invoice) => invoice.paymentMethod === 'Tunai').reduce((sum, invoice) => sum + invoice.total, 0);
+  const totalCreditSales = periodInvoices.filter((invoice) => invoice.paymentMethod === 'Kredit').reduce((sum, invoice) => sum + invoice.total, 0);
+  const totalTransferSales = periodInvoices.filter((invoice) => invoice.paymentMethod === 'Transfer Bank').reduce((sum, invoice) => sum + invoice.total, 0);
+  const paymentTotal = totalCashSales + totalCreditSales + totalTransferSales;
+  const creditPercent = paymentTotal ? Math.round(totalCreditSales / paymentTotal * 100) : 0;
+  const cashPercent = paymentTotal ? 100 - creditPercent : 0;
+  const criticalStockProduct = [...products].filter((product) => product.stock <= product.minStock).sort((a, b) => a.stock - b.stock)[0];
+  const sellerRevenue = periodInvoices.filter((invoice) => !!invoice.sellerId).reduce((sum, invoice) => sum + invoice.total, 0);
+  const retailRevenue = periodInvoices.filter((invoice) => !invoice.sellerId).reduce((sum, invoice) => sum + invoice.total, 0);
+  const channelTotal = sellerRevenue + retailRevenue;
+  const sellerPercent = channelTotal ? Math.round(sellerRevenue / channelTotal * 100) : 0;
+  const retailPercent = channelTotal ? 100 - sellerPercent : 0;
+  const topProductToday = (() => {
+    const today = new Date().toISOString().slice(0, 10);
+    const totals = new Map<string, { name: string; sku: string; quantity: number }>();
+    for (const invoice of periodInvoices.filter((item) => item.date.slice(0, 10) === today)) for (const item of invoice.items) {
+      const current = totals.get(item.productId) || { name: item.productName, sku: item.productSku, quantity: 0 };
+      current.quantity += item.quantity; totals.set(item.productId, current);
+    }
+    return [...totals.values()].sort((a, b) => b.quantity - a.quantity)[0];
+  })();
 
   // Filtered transactions based on search term
   const filteredTransactions = useMemo(() => {
     if (!searchTerm.trim()) return allTransactions;
     const term = searchTerm.toLowerCase();
-    return allTransactions.filter(
-      (tx) =>
-        tx.invoiceNumber.toLowerCase().includes(term) ||
-        tx.customerName.toLowerCase().includes(term) ||
-        tx.saleType.toLowerCase().includes(term) ||
-        tx.paymentMethod.toLowerCase().includes(term) ||
-        (tx.itemsSummary && tx.itemsSummary.toLowerCase().includes(term))
+    return allTransactions.filter((tx) =>
+      tx.invoiceNumber.toLowerCase().includes(term) ||
+      tx.customerName.toLowerCase().includes(term) ||
+      tx.saleType.toLowerCase().includes(term) ||
+      tx.paymentMethod.toLowerCase().includes(term) ||
+      (tx.itemsSummary && tx.itemsSummary.toLowerCase().includes(term))
     );
   }, [allTransactions, searchTerm]);
 
@@ -335,7 +213,7 @@ export const SalesReport: React.FC = () => {
             </span>
             <span className="text-gray-500 text-xs flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              Sinkronisasi real-time kasir aktif
+              Data laporan dari faktur tersimpan
             </span>
           </div>
 
@@ -420,7 +298,7 @@ export const SalesReport: React.FC = () => {
               Sinkron POS
             </span>
             <span className="text-gray-500 text-[11px]">
-              {realTransactionsCount > 0 ? `${realTransactionsCount} transaksi kasir aktif` : 'Real-time & arsip'}
+              {realTransactionsCount > 0 ? `${realTransactionsCount} faktur tersimpan` : 'Belum ada transaksi pada periode ini'}
             </span>
           </div>
         </div>
@@ -494,16 +372,16 @@ export const SalesReport: React.FC = () => {
             </div>
             <div className="mt-2">
               <h3 className="text-xl font-black text-white tracking-tight">
-                CD Pria Boxer
+                {topProductToday?.name || 'Belum ada penjualan hari ini'}
               </h3>
             </div>
           </div>
           <div className="mt-3 pt-2.5 border-t border-emerald-700/40 flex items-center justify-between text-xs">
             <span className="text-emerald-100 text-xs">
-              Terjual: <strong className="text-white font-bold">45 pcs</strong>
+              Terjual: <strong className="text-white font-bold">{topProductToday?.quantity || 0} pcs</strong>
             </span>
             <span className="bg-[#043828] text-emerald-200 text-[11px] font-mono px-2 py-0.5 rounded border border-emerald-700/60">
-              SKU: UW-MBX-01
+              SKU: {topProductToday?.sku || '-'}
             </span>
           </div>
         </div>
@@ -520,7 +398,7 @@ export const SalesReport: React.FC = () => {
                   Kanal Penjualan
                 </h3>
                 <p className="text-xs text-gray-500 mt-0.5">
-                  Rasio kontribusi omset hari ini
+                  Kontribusi omzet berdasarkan faktur tersimpan
                 </p>
               </div>
               <div className="text-indigo-900">
@@ -542,7 +420,7 @@ export const SalesReport: React.FC = () => {
                     strokeWidth="16"
                     fill="transparent"
                   />
-                  {/* Mitra Seller segment (73% -> 211.2 of 289 perimeter) */}
+                  {/* Segmen Mitra Seller dihitung berdasarkan kontribusi omzet faktur. */}
                   <circle
                     cx="60"
                     cy="60"
@@ -550,11 +428,11 @@ export const SalesReport: React.FC = () => {
                     stroke="#4f46e5"
                     strokeWidth="16"
                     fill="transparent"
-                    strokeDasharray="211 289"
+                    strokeDasharray={`${sellerPercent * 2.89} 289`}
                     strokeDashoffset="0"
                     strokeLinecap="round"
                   />
-                  {/* Ritel Kasir segment (27% -> 78 of 289 perimeter) */}
+                  {/* Segmen transaksi ritel dihitung berdasarkan kontribusi omzet faktur. */}
                   <circle
                     cx="60"
                     cy="60"
@@ -562,8 +440,8 @@ export const SalesReport: React.FC = () => {
                     stroke="#059669"
                     strokeWidth="16"
                     fill="transparent"
-                    strokeDasharray="78 289"
-                    strokeDashoffset="-211"
+                    strokeDasharray={`${retailPercent * 2.89} 289`}
+                    strokeDashoffset={`-${sellerPercent * 2.89}`}
                     strokeLinecap="round"
                   />
                 </svg>
@@ -574,7 +452,7 @@ export const SalesReport: React.FC = () => {
                     Total
                   </span>
                   <span className="text-base font-black text-gray-900 leading-tight">
-                    100%
+                    {channelTotal > 0 ? '100%' : '0%'}
                   </span>
                 </div>
               </div>
@@ -585,7 +463,7 @@ export const SalesReport: React.FC = () => {
                   <span className="w-3 h-3 rounded-full bg-[#4f46e5] shrink-0 mt-0.5" />
                   <div>
                     <p className="font-bold text-gray-800">Mitra Seller</p>
-                    <p className="text-gray-500 font-medium">Rp 2.300.000 (73%)</p>
+                    <p className="text-gray-500 font-medium">Rp {sellerRevenue.toLocaleString('id-ID')} ({sellerPercent}%)</p>
                   </div>
                 </div>
 
@@ -593,7 +471,7 @@ export const SalesReport: React.FC = () => {
                   <span className="w-3 h-3 rounded-full bg-[#059669] shrink-0 mt-0.5" />
                   <div>
                     <p className="font-bold text-gray-800">Ritel Kasir</p>
-                    <p className="text-gray-500 font-medium">Rp 850.000 (27%)</p>
+                    <p className="text-gray-500 font-medium">Rp {retailRevenue.toLocaleString('id-ID')} ({retailPercent}%)</p>
                   </div>
                 </div>
               </div>
@@ -603,10 +481,10 @@ export const SalesReport: React.FC = () => {
           {/* Bottom Card Summary Bar */}
           <div className="bg-slate-50 border border-slate-200/80 rounded-lg px-3.5 py-2.5 flex items-center justify-between text-xs mt-2">
             <span className="text-gray-600 font-medium">
-              Arus Kas Tunai vs Tempo:
+              Komposisi Kredit vs Pembayaran Langsung:
             </span>
             <span className="text-gray-900 font-bold">
-              62% Kredit / 38% Cash
+              {creditPercent}% Kredit / {cashPercent}% Tunai & Transfer
             </span>
           </div>
         </div>
@@ -624,65 +502,25 @@ export const SalesReport: React.FC = () => {
                 </p>
               </div>
               <span className="bg-blue-50 text-blue-700 text-[11px] font-semibold px-2.5 py-0.5 rounded-full border border-blue-100">
-                Data Realtime
+                Berdasarkan Faktur
               </span>
             </div>
 
-            {/* 3 Metric Box Cards */}
+            {/* Peringkat produk dihitung dari item faktur di PostgreSQL */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 my-4">
-              {/* Product 1 */}
-              <div className="bg-stone-50/70 border border-stone-200/80 rounded-lg p-3 relative flex flex-col justify-between">
-                <div>
-                  <div className="w-5 h-5 bg-[#065f46] text-white rounded flex items-center justify-center text-xs font-bold">
-                    1
+              {topProducts.map((product, index) => (
+                <div key={product.name} className="bg-stone-50/70 border border-stone-200/80 rounded-lg p-3 relative flex flex-col justify-between">
+                  <div>
+                    <div className="w-5 h-5 bg-[#065f46] text-white rounded flex items-center justify-center text-xs font-bold">{index + 1}</div>
+                    <h4 className="font-bold text-gray-900 text-xs sm:text-sm mt-2 line-clamp-1">{product.name}</h4>
                   </div>
-                  <h4 className="font-bold text-gray-900 text-xs sm:text-sm mt-2 line-clamp-1">
-                    CD Boxer Katun
-                  </h4>
-                </div>
-                <div className="mt-3 pt-2 border-t border-gray-200/60 flex items-center justify-between text-xs">
-                  <span className="text-gray-500 text-[11px]">45 terjual</span>
-                  <span className="font-bold text-[#059669] text-xs">
-                    Rp 1.035.000
-                  </span>
-                </div>
-              </div>
-
-              {/* Product 2 */}
-              <div className="bg-stone-50/70 border border-stone-200/80 rounded-lg p-3 relative flex flex-col justify-between">
-                <div>
-                  <div className="w-5 h-5 bg-[#4338ca] text-white rounded flex items-center justify-center text-xs font-bold">
-                    2
+                  <div className="mt-3 pt-2 border-t border-gray-200/60 flex items-center justify-between text-xs">
+                    <span className="text-gray-500 text-[11px]">{product.quantity.toLocaleString('id-ID')} terjual</span>
+                    <span className="font-bold text-[#059669] text-xs">Rp {product.revenue.toLocaleString('id-ID')}</span>
                   </div>
-                  <h4 className="font-bold text-gray-900 text-xs sm:text-sm mt-2 line-clamp-1">
-                    Singlet Pria Ribbed
-                  </h4>
                 </div>
-                <div className="mt-3 pt-2 border-t border-gray-200/60 flex items-center justify-between text-xs">
-                  <span className="text-gray-500 text-[11px]">38 terjual</span>
-                  <span className="font-bold text-[#4338ca] text-xs">
-                    Rp 950.000
-                  </span>
-                </div>
-              </div>
-
-              {/* Product 3 */}
-              <div className="bg-stone-50/70 border border-stone-200/80 rounded-lg p-3 relative flex flex-col justify-between">
-                <div>
-                  <div className="w-5 h-5 bg-[#0f766e] text-white rounded flex items-center justify-center text-xs font-bold">
-                    3
-                  </div>
-                  <h4 className="font-bold text-gray-900 text-xs sm:text-sm mt-2 line-clamp-1">
-                    Celana Dalam Seamles
-                  </h4>
-                </div>
-                <div className="mt-3 pt-2 border-t border-gray-200/60 flex items-center justify-between text-xs">
-                  <span className="text-gray-500 text-[11px]">29 terjual</span>
-                  <span className="font-bold text-[#0f766e] text-xs">
-                    Rp 696.000
-                  </span>
-                </div>
-              </div>
+              ))}
+              {topProducts.length === 0 && <p className="text-xs text-gray-500 sm:col-span-3">Belum ada data penjualan produk.</p>}
             </div>
           </div>
 
@@ -693,7 +531,7 @@ export const SalesReport: React.FC = () => {
             </span>
             <span className="text-amber-700 font-semibold flex items-center gap-1.5">
               <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
-              Boxer Navy Ukuran XL tersisa 4 pcs
+              {criticalStockProduct ? `${criticalStockProduct.name} tersisa ${criticalStockProduct.stock} pcs` : 'Tidak ada produk dengan stok kritis.'}
             </span>
           </div>
         </div>
@@ -712,7 +550,7 @@ export const SalesReport: React.FC = () => {
                 Riwayat Transaksi Penjualan
               </h3>
               <p className="text-xs text-gray-500">
-                Data tercatat dari kasir offline dan pesanan konsinyasi seller
+                Data transaksi berdasarkan faktur tersimpan di PostgreSQL
               </p>
             </div>
           </div>
@@ -780,11 +618,6 @@ export const SalesReport: React.FC = () => {
                         <span className="group-hover:text-emerald-700 transition-colors">
                           {tx.invoiceNumber}
                         </span>
-                        {(tx as any).isLive && (
-                          <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-1.5 py-0.5 rounded font-mono">
-                            BARU (KASIR)
-                          </span>
-                        )}
                       </div>
                     </td>
 
@@ -995,7 +828,7 @@ export const SalesReport: React.FC = () => {
                 <div>
                   <h3 className="font-bold text-base">Pratinjau Cetak Laporan PDF</h3>
                   <p className="text-xs text-emerald-200">
-                    Tino Underwear Information System • Dokumen Resmi Penjualan
+                    Laporan internal berdasarkan faktur tersimpan
                   </p>
                 </div>
               </div>
@@ -1018,13 +851,13 @@ export const SalesReport: React.FC = () => {
                     Tino Underwear Information System
                   </p>
                   <p className="text-[11px] text-gray-500">
-                    Toko Pusat Bekasi • Terminal Kasir POS-01
+                    Sumber data: PostgreSQL
                   </p>
                 </div>
                 <div className="text-right text-xs">
-                  <p className="font-bold text-emerald-800">LAPORAN PENJUALAN HARIAN</p>
+                  <p className="font-bold text-emerald-800">LAPORAN PENJUALAN</p>
                   <p className="text-gray-500">Periode: {selectedPeriod}</p>
-                  <p className="text-gray-400 text-[10px]">Dicetak: 08 Okt 2026 12:00 WIB</p>
+                  <p className="text-gray-400 text-[10px]">Dicetak: {new Date().toLocaleString('id-ID')}</p>
                 </div>
               </div>
 
@@ -1032,15 +865,15 @@ export const SalesReport: React.FC = () => {
               <div className="grid grid-cols-3 gap-3 text-xs">
                 <div className="p-3 bg-gray-50 rounded border border-gray-200">
                   <span className="text-gray-500 block">Total Omset Kotor</span>
-                  <span className="text-base font-extrabold text-emerald-700">Rp 3.150.000</span>
+                  <span className="text-base font-extrabold text-emerald-700">Rp {totalOmsetKotor.toLocaleString('id-ID')}</span>
                 </div>
                 <div className="p-3 bg-gray-50 rounded border border-gray-200">
                   <span className="text-gray-500 block">Volume Terjual</span>
-                  <span className="text-base font-extrabold text-gray-800">142 pcs</span>
+                  <span className="text-base font-extrabold text-gray-800">{totalQtyTerjual.toLocaleString('id-ID')} pcs</span>
                 </div>
                 <div className="p-3 bg-gray-50 rounded border border-gray-200">
                   <span className="text-gray-500 block">Total Transaksi</span>
-                  <span className="text-base font-extrabold text-amber-600">24 Nota</span>
+                  <span className="text-base font-extrabold text-amber-600">{totalNotaCount.toLocaleString('id-ID')} Nota</span>
                 </div>
               </div>
 
@@ -1050,18 +883,13 @@ export const SalesReport: React.FC = () => {
                   Top 3 Produk Terlaris
                 </h4>
                 <div className="border border-gray-200 rounded text-xs divide-y divide-gray-100">
-                  <div className="p-2.5 flex justify-between">
-                    <span>1. CD Boxer Katun (45 pcs)</span>
-                    <span className="font-bold">Rp 1.035.000</span>
-                  </div>
-                  <div className="p-2.5 flex justify-between">
-                    <span>2. Singlet Pria Ribbed (38 pcs)</span>
-                    <span className="font-bold">Rp 950.000</span>
-                  </div>
-                  <div className="p-2.5 flex justify-between">
-                    <span>3. Celana Dalam Seamles (29 pcs)</span>
-                    <span className="font-bold">Rp 696.000</span>
-                  </div>
+                  {topProducts.map((product, index) => (
+                    <div key={product.name} className="p-2.5 flex justify-between">
+                      <span>{index + 1}. {product.name} ({product.quantity} pcs)</span>
+                      <span className="font-bold">Rp {product.revenue.toLocaleString('id-ID')}</span>
+                    </div>
+                  ))}
+                  {topProducts.length === 0 && <p className="p-2.5 text-gray-500">Belum ada penjualan produk.</p>}
                 </div>
               </div>
 
@@ -1081,7 +909,7 @@ export const SalesReport: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {SAMPLE_TRANSACTIONS.slice(0, 4).map((t) => (
+                    {allTransactions.slice(0, 4).map((t) => (
                       <tr key={t.id}>
                         <td className="p-2 font-mono font-medium">{t.invoiceNumber}</td>
                         <td className="p-2">{t.customerName}</td>
@@ -1090,6 +918,9 @@ export const SalesReport: React.FC = () => {
                         <td className="p-2 font-bold">Rp {t.total.toLocaleString('id-ID')}</td>
                       </tr>
                     ))}
+                    {allTransactions.length === 0 && (
+                      <tr><td className="p-3 text-center text-gray-500" colSpan={5}>Belum ada transaksi tersimpan.</td></tr>
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -1099,12 +930,12 @@ export const SalesReport: React.FC = () => {
                 <div>
                   <p>Petugas Kasir</p>
                   <div className="h-14" />
-                  <p className="font-semibold text-gray-900">( Kasir POS-01 )</p>
+                  <p className="font-semibold text-gray-900">Faktur tersimpan di PostgreSQL</p>
                 </div>
                 <div>
                   <p>Mengetahui, Owner</p>
                   <div className="h-14" />
-                  <p className="font-semibold text-gray-900">( Pak Tino )</p>
+                  <p className="font-semibold text-gray-900">{currentUser?.name || 'Owner TUMIN'}</p>
                 </div>
               </div>
             </div>

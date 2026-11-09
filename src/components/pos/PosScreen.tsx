@@ -12,7 +12,8 @@ import { Badge, StatusBadge } from '../common/Badge';
 import { StitchDivider } from '../common/StitchDivider';
 import { ReceiptModal } from './ReceiptModal';
 import { PaymentProofModal } from '../common/PaymentProofModal';
-import { SAMPLE_TRANSFER_RECEIPT_SVG } from '../../utils/sampleProof';
+import { apiFetch } from '../../services/apiService';
+import { getProductDisplayImage } from '../../utils/productImages';
 import {
   Search,
   Plus,
@@ -58,6 +59,19 @@ export const PosScreen: React.FC<PosScreenProps> = ({ onLogout }) => {
     pendingSellersCount,
     logout,
   } = useApp();
+
+  const [paymentSettings, setPaymentSettings] = useState({ bankName: '', accountNumber: '', accountHolder: '' });
+  useEffect(() => {
+    apiFetch('/api/pengaturan', { suppressGlobalError: true }).then((response) => {
+      if (response.ok && response.data) {
+        setPaymentSettings({
+          bankName: response.data.bankName || '',
+          accountNumber: response.data.bankAccountNumber || '',
+          accountHolder: response.data.bankAccountHolder || '',
+        });
+      }
+    });
+  }, []);
 
   // Active tab within Kasir portal
   const [kasirTab, setKasirTab] = useState<'pos' | 'riwayat' | 'produk' | 'piutang' | 'seller'>(() => {
@@ -219,7 +233,7 @@ export const PosScreen: React.FC<PosScreenProps> = ({ onLogout }) => {
     setTransferReference('');
   };
 
-  const handleProcessPayment = () => {
+  const handleProcessPayment = async () => {
     setValidationError('');
 
     if (cart.length === 0) {
@@ -260,7 +274,7 @@ export const PosScreen: React.FC<PosScreenProps> = ({ onLogout }) => {
     }
 
     // Call checkout
-    const result = createSaleTransaction({
+    const result = await createSaleTransaction({
       items: cart,
       paymentMethod,
       cashReceived: paymentMethod === 'Tunai' ? Number(cashReceived) : undefined,
@@ -268,7 +282,7 @@ export const PosScreen: React.FC<PosScreenProps> = ({ onLogout }) => {
       dueDate: paymentMethod === 'Kredit' ? dueDate : undefined,
       discount: discountAmount,
       paymentProofImage: paymentMethod === 'Transfer Bank' ? (transferProofImage || undefined) : undefined,
-      bankName: paymentMethod === 'Transfer Bank' ? 'BCA 521-089-2234 a.n Tino Underwear (Owner)' : undefined,
+      bankName: paymentMethod === 'Transfer Bank' ? `${paymentSettings.bankName} ${paymentSettings.accountNumber} a.n ${paymentSettings.accountHolder}`.trim() : undefined,
       transferReference: paymentMethod === 'Transfer Bank' ? (transferReference.trim() || undefined) : undefined,
     });
 
@@ -293,11 +307,11 @@ export const PosScreen: React.FC<PosScreenProps> = ({ onLogout }) => {
   };
 
   // Handle Installment Payment submission in Piutang view
-  const handleRecordInstallmentSubmit = (e: React.FormEvent) => {
+  const handleRecordInstallmentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!payingInvoice || !installmentAmount) return;
 
-    const res = recordInstallment({
+    const res = await recordInstallment({
       invoiceId: payingInvoice.id,
       amount: Number(installmentAmount),
       method: installmentMethod,
@@ -320,6 +334,10 @@ export const PosScreen: React.FC<PosScreenProps> = ({ onLogout }) => {
     'CD Wanita',
     'Anak-Anak',
     'Korset',
+    'Bra',
+    'Kaos Kaki',
+    'Lingerie',
+    'Lain-lain',
   ];
 
   return (
@@ -410,7 +428,7 @@ export const PosScreen: React.FC<PosScreenProps> = ({ onLogout }) => {
         <div className="flex items-center gap-3">
           <div className="hidden md:flex flex-col text-right">
             <span className="text-xs font-semibold text-[#10241D]">
-              {currentUser?.name || 'Siti Rahma'}
+              {currentUser?.name || 'Kasir'}
             </span>
             <span className="text-[11px] text-[#4B6359]">
               {currentUser?.shift || 'Shift Pagi (08:00 - 16:00)'}
@@ -507,33 +525,53 @@ export const PosScreen: React.FC<PosScreenProps> = ({ onLogout }) => {
                         type="button"
                         disabled={isOutOfStock}
                         onClick={() => addToCart(prod)}
-                        className={`text-left group relative transition-all rounded-lg p-3 bg-white border border-[#047857]/20 hover:border-[#047857] hover:shadow-md flex flex-col justify-between ${
+                        className={`text-left group relative transition-all rounded-xl p-2.5 bg-white border border-[#047857]/20 hover:border-[#047857] hover:shadow-md flex flex-col justify-between ${
                           isOutOfStock
                             ? 'opacity-55 cursor-not-allowed bg-stone-50 border-stone-200'
                             : 'cursor-pointer active:scale-[0.98]'
                         }`}
                       >
                         <div>
-                          {/* SKU & Category */}
-                          <div className="flex items-center justify-between text-[11px] text-[#4B6359] mb-1">
+                          {/* Product Image Thumbnail */}
+                          <div className="w-full h-28 sm:h-32 rounded-lg bg-stone-100 border border-stone-200/80 overflow-hidden mb-2 relative flex items-center justify-center">
+                            <img
+                              src={getProductDisplayImage(prod)}
+                              alt={prod.name}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                              loading="lazy"
+                            />
+                            {/* Stock badge overlay on image */}
+                            <div className="absolute top-1.5 right-1.5">
+                              <Badge variant={stockBadgeVariant} size="sm">
+                                {stockLabel}
+                              </Badge>
+                            </div>
+                            {/* Category chip overlay */}
+                            <div className="absolute bottom-1.5 left-1.5 bg-black/60 backdrop-blur-xs text-white text-[9px] font-medium px-1.5 py-0.5 rounded">
+                              {prod.category}
+                            </div>
+                          </div>
+
+                          {/* SKU */}
+                          <div className="flex items-center justify-between text-[11px] text-[#4B6359] mb-0.5">
                             <span className="font-mono-num font-semibold text-[#047857]">
                               {prod.sku}
                             </span>
                             <span className="text-[10px] text-stone-400">
-                              {prod.category}
+                              {prod.unit}
                             </span>
                           </div>
 
                           {/* Name */}
-                          <h4 className="text-xs sm:text-sm font-semibold text-[#10241D] line-clamp-2 leading-snug group-hover:text-[#047857] transition-colors">
+                          <h4 className="text-xs sm:text-sm font-semibold text-[#10241D] line-clamp-2 leading-snug group-hover:text-[#047857] transition-colors min-h-[2.25rem]">
                             {prod.name}
                           </h4>
                         </div>
 
-                        {/* Price & Stock status */}
-                        <div className="mt-3 pt-2 border-t border-dashed border-stone-200 flex items-center justify-between">
+                        {/* Price bar */}
+                        <div className="mt-2 pt-2 border-t border-dashed border-stone-200 flex items-center justify-between">
                           <div>
-                            <span className="text-[10px] text-[#4B6359] block">
+                            <span className="text-[9px] text-[#4B6359] block">
                               Harga
                             </span>
                             <span className="text-xs sm:text-sm font-bold font-mono-num text-[#047857]">
@@ -541,10 +579,9 @@ export const PosScreen: React.FC<PosScreenProps> = ({ onLogout }) => {
                             </span>
                           </div>
 
-                          {/* Stock badge */}
-                          <Badge variant={stockBadgeVariant} size="sm">
-                            {stockLabel}
-                          </Badge>
+                          <div className="w-7 h-7 rounded-lg bg-emerald-50 group-hover:bg-[#047857] text-[#047857] group-hover:text-white flex items-center justify-center transition-colors">
+                            <Plus className="w-4 h-4" />
+                          </div>
                         </div>
                       </button>
                     );
@@ -597,8 +634,17 @@ export const PosScreen: React.FC<PosScreenProps> = ({ onLogout }) => {
                     cart.map((item) => (
                       <div
                         key={item.product.id}
-                        className="p-2 bg-stone-50 rounded border border-dashed border-stone-200 flex items-center justify-between gap-2"
+                        className="p-2 bg-stone-50 rounded-lg border border-dashed border-stone-200 flex items-center justify-between gap-2"
                       >
+                        {/* Cart Item Thumbnail */}
+                        <div className="w-10 h-10 rounded-md bg-stone-100 border border-stone-200 overflow-hidden shrink-0">
+                          <img
+                            src={getProductDisplayImage(item.product)}
+                            alt={item.product.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+
                         <div className="min-w-0 flex-1">
                           <p className="text-xs font-semibold text-[#10241D] truncate">
                             {item.product.name}
@@ -740,7 +786,7 @@ export const PosScreen: React.FC<PosScreenProps> = ({ onLogout }) => {
                         <button
                           type="button"
                           onClick={() => {
-                            navigator.clipboard.writeText('5210892234');
+                            navigator.clipboard.writeText(paymentSettings.accountNumber);
                             setCopiedAccount(true);
                             setTimeout(() => setCopiedAccount(false), 2000);
                           }}
@@ -763,14 +809,14 @@ export const PosScreen: React.FC<PosScreenProps> = ({ onLogout }) => {
                       <div className="p-2 bg-white rounded border border-purple-200 font-mono-num flex items-center justify-between">
                         <div>
                           <p className="font-extrabold text-sm text-[#10241D]">
-                            BCA: 521-089-2234
+                            {paymentSettings.bankName || 'Bank belum diatur'}: {paymentSettings.accountNumber || '-'}
                           </p>
                           <p className="text-[11px] text-stone-600 font-sans font-medium">
-                            a.n Tino (Owner Tino Underwear)
+                            a.n {paymentSettings.accountHolder || '-'}
                           </p>
                         </div>
                         <span className="text-[10px] font-semibold bg-purple-100 text-[#6D28D9] px-2 py-0.5 rounded">
-                          BCA
+                          {paymentSettings.bankName || 'BANK'}
                         </span>
                       </div>
                     </div>
@@ -782,19 +828,6 @@ export const PosScreen: React.FC<PosScreenProps> = ({ onLogout }) => {
                           <ImageIcon className="w-3.5 h-3.5 text-[#6D28D9]" />
                           <span>Bukti Bayar Transfer *</span>
                         </label>
-                        {!transferProofImage && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const sample = SAMPLE_TRANSFER_RECEIPT_SVG(cartTotal, draftInvoiceNumber);
-                              setTransferProofImage(sample);
-                            }}
-                            className="text-[10px] text-[#047857] hover:underline font-semibold"
-                            title="Gunakan simulasi struk transfer m-Banking"
-                          >
-                            + Contoh Bukti
-                          </button>
-                        )}
                       </div>
 
                       {transferProofImage ? (
@@ -811,7 +844,7 @@ export const PosScreen: React.FC<PosScreenProps> = ({ onLogout }) => {
                                 Bukti Terpasang
                               </span>
                               <span className="text-[10px] text-stone-500 block truncate">
-                                Terverifikasi untuk Owner
+                                Bukti terlampir, menunggu pencatatan transaksi
                               </span>
                             </div>
                           </div>
@@ -834,7 +867,7 @@ export const PosScreen: React.FC<PosScreenProps> = ({ onLogout }) => {
                                   status: 'PAID',
                                   installments: [],
                                   paymentProofImage: transferProofImage,
-                                  bankName: 'BCA 521-089-2234 a.n Tino (Owner)',
+                                  bankName: `${paymentSettings.bankName} ${paymentSettings.accountNumber} a.n ${paymentSettings.accountHolder}`.trim(),
                                   transferReference,
                                 });
                               }}
@@ -1180,7 +1213,16 @@ export const PosScreen: React.FC<PosScreenProps> = ({ onLogout }) => {
                           {prod.sku}
                         </td>
                         <td className="py-2.5 px-3 font-semibold text-[#10241D]">
-                          {prod.name}
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-8 h-8 rounded-md bg-stone-100 border border-stone-200 overflow-hidden shrink-0">
+                              <img
+                                src={getProductDisplayImage(prod)}
+                                alt={prod.name}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            <span>{prod.name}</span>
+                          </div>
                         </td>
                         <td className="py-2.5 px-3 text-stone-600">{prod.category}</td>
                         <td className="py-2.5 px-3 font-mono-num font-bold text-[#10241D]">
@@ -1330,21 +1372,21 @@ export const PosScreen: React.FC<PosScreenProps> = ({ onLogout }) => {
                         {s.status === 'Pending' ? (
                           <div className="flex items-center justify-end gap-1.5">
                             <button
-                              onClick={() => approveSeller(s.id)}
+                              onClick={() => { void approveSeller(s.id).catch(() => undefined); }}
                               className="px-2.5 py-1 bg-[#047857] hover:bg-[#065F46] text-white rounded text-[11px] font-semibold"
                             >
                               Setujui
                             </button>
                             <button
-                              onClick={() => rejectSeller(s.id)}
+                              onClick={() => { void rejectSeller(s.id).catch(() => undefined); }}
                               className="px-2.5 py-1 bg-stone-100 hover:bg-rose-50 text-rose-700 rounded text-[11px] font-semibold"
                             >
                               Tolak
                             </button>
                           </div>
                         ) : (
-                          <span className="text-[11px] text-stone-400">
-                            Terverifikasi
+                          <span className="text-[11px] text-stone-500">
+                            {s.status}
                           </span>
                         )}
                       </td>

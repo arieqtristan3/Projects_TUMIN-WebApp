@@ -29,10 +29,11 @@ import {
   EyeOff,
   ExternalLink,
   MessageCircle,
+  Trash2,
 } from 'lucide-react';
 
 export const SellerManagement: React.FC = () => {
-  const { sellers, approveSeller, rejectSeller, updateSeller, registerSeller } = useApp();
+  const { sellers, approveSeller, rejectSeller, deleteSeller, updateSeller, registerSeller } = useApp();
 
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'Semua' | SellerStatus>('Semua');
@@ -61,7 +62,7 @@ export const SellerManagement: React.FC = () => {
     phone: '',
     address: '',
     creditLimit: 5000000,
-    password: 'seller123',
+    password: '',
   });
 
   // Pending seller requests
@@ -116,7 +117,7 @@ export const SellerManagement: React.FC = () => {
   const generateApprovalMessage = (seller: Seller, creditLimit: number) => {
     const limitFormatted = Number(creditLimit || 5000000).toLocaleString('id-ID');
     const loginUser = seller.username || seller.phone;
-    const loginPass = seller.password || 'seller123';
+    const loginPass = 'Kata sandi dibuat oleh mitra saat pendaftaran.';
 
     return `Halo Bapak/Ibu ${seller.name} (${seller.storeName}),\n\nSelamat! Pengajuan kemitraan toko Anda di Tino Underwear telah DISETUJUI oleh Owner dengan Plafon Kredit Awal sebesar Rp ${limitFormatted}.\n\nBerikut rincian akun login portal TUMIN Anda:\n• Username / No. HP: ${loginUser}\n• Kata Sandi: ${loginPass}\n\nSilakan gunakan akun tersebut untuk masuk ke portal TUMIN agar dapat melihat katalog produk grosir, mengecek stok barang tempo, dan memantau riwayat faktur piutang Anda.\n\nTerima kasih atas kerja samanya!\n— Manajemen Tino Underwear Bekasi`;
   };
@@ -158,21 +159,22 @@ export const SellerManagement: React.FC = () => {
     document.body.removeChild(link);
   };
 
-  const handleAddSellerSubmit = (e: React.FormEvent) => {
+  const handleAddSellerSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newSellerData.name || !newSellerData.storeName || !newSellerData.phone) return;
+    if (!newSellerData.name || !newSellerData.storeName || !newSellerData.phone || newSellerData.password.length < 8) { window.alert('Lengkapi data Seller dan gunakan kata sandi minimal 8 karakter.'); return; }
 
-    const registered = registerSeller({
-      username: newSellerData.username || newSellerData.phone.replace(/\D/g, ''),
-      name: newSellerData.name,
-      storeName: newSellerData.storeName,
-      phone: newSellerData.phone,
-      address: newSellerData.address || 'Bekasi',
-      password: newSellerData.password || 'seller123',
-    });
-
-    if (registered && registered.id) {
-      approveSeller(registered.id, newSellerData.creditLimit || 5000000);
+    try {
+      await registerSeller({
+        username: newSellerData.username || newSellerData.phone.replace(/\D/g, ''),
+        name: newSellerData.name,
+        storeName: newSellerData.storeName,
+        phone: newSellerData.phone,
+        address: newSellerData.address || 'Bekasi',
+        password: newSellerData.password,
+      });
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : 'Pendaftaran Seller gagal disimpan.');
+      return;
     }
 
     setIsAddSellerOpen(false);
@@ -183,8 +185,22 @@ export const SellerManagement: React.FC = () => {
       phone: '',
       address: '',
       creditLimit: 5000000,
-      password: 'seller123',
+      password: '',
     });
+  };
+
+  const handleDeleteSeller = async (seller: Seller) => {
+    const confirmed = window.confirm(
+      `Hapus Seller ${seller.name} (@${seller.username || seller.id}) secara permanen?\n\nPenghapusan hanya berhasil jika Seller belum memiliki riwayat transaksi/konsinyasi dan tidak memiliki piutang berjalan. Tindakan ini tidak dapat dibatalkan.`
+    );
+    if (!confirmed) return;
+
+    try {
+      await deleteSeller(seller.id);
+      window.alert(`Seller ${seller.name} berhasil dihapus.`);
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : 'Seller gagal dihapus.');
+    }
   };
 
   const handleOpenApprovalModal = (seller: Seller) => {
@@ -194,10 +210,11 @@ export const SellerManagement: React.FC = () => {
     setCopiedApprovalText(false);
   };
 
-  const handleConfirmApproval = (openWhatsApp: boolean) => {
+  const handleConfirmApproval = async (openWhatsApp: boolean) => {
     if (!approvalModalSeller) return;
 
-    approveSeller(approvalModalSeller.id, approvalCreditLimit);
+    try { await approveSeller(approvalModalSeller.id, approvalCreditLimit); }
+    catch (error) { window.alert(error instanceof Error ? error.message : 'Persetujuan Seller gagal disimpan.'); return; }
 
     if (openWhatsApp) {
       const msg = generateApprovalMessage(approvalModalSeller, approvalCreditLimit);
@@ -223,13 +240,12 @@ export const SellerManagement: React.FC = () => {
     setTimeout(() => setCopiedApprovalText(false), 2500);
   };
 
-  const handleUpdateCreditSubmit = (e: React.FormEvent) => {
+  const handleUpdateCreditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingCreditSeller || newCreditLimit === '') return;
 
-    updateSeller(editingCreditSeller.id, {
-      creditLimit: Number(newCreditLimit),
-    });
+    try { await updateSeller(editingCreditSeller.id, { creditLimit: Number(newCreditLimit) }); }
+    catch (error) { window.alert(error instanceof Error ? error.message : 'Limit piutang gagal diperbarui.'); return; }
 
     setEditingCreditSeller(null);
     setNewCreditLimit('');
@@ -413,7 +429,7 @@ export const SellerManagement: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
-                      onClick={() => rejectSeller(seller.id)}
+                      onClick={() => { void rejectSeller(seller.id).catch((error) => window.alert(error instanceof Error ? error.message : 'Seller gagal ditangguhkan.')); }}
                       className="px-3 py-1.5 bg-gray-100 hover:bg-red-50 text-red-600 text-xs font-semibold rounded-lg transition-colors cursor-pointer"
                     >
                       Tolak
@@ -599,6 +615,16 @@ export const SellerManagement: React.FC = () => {
 
                           <button
                             type="button"
+                            onClick={() => { void handleDeleteSeller(seller); }}
+                            className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors cursor-pointer"
+                            title="Hapus Seller (hanya jika belum memiliki riwayat bisnis)"
+                            aria-label={`Hapus Seller ${seller.name}`}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+
+                          <button
+                            type="button"
                             onClick={() => {
                               setEditingCreditSeller(seller);
                               setNewCreditLimit(creditLimit);
@@ -720,9 +746,7 @@ export const SellerManagement: React.FC = () => {
                     <div>
                       <span className="text-gray-400 block text-[11px]">Kata Sandi yang Didaftarkan:</span>
                       <strong className="font-mono text-gray-900">
-                        {showApprovalPassword
-                          ? approvalModalSeller.password || 'seller123'
-                          : '••••••••'}
+                        {'Kata sandi tidak ditampilkan demi keamanan.'}
                       </strong>
                     </div>
                     <button
@@ -931,7 +955,7 @@ export const SellerManagement: React.FC = () => {
                     type="text"
                     value={newSellerData.password}
                     onChange={(e) => setNewSellerData({ ...newSellerData, password: e.target.value })}
-                    placeholder="seller123"
+                    placeholder="Minimal 8 karakter"
                     className="w-full px-3 py-2 text-xs font-mono bg-gray-50 border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:border-teal-600 focus:bg-white"
                     required
                   />
@@ -1020,7 +1044,7 @@ export const SellerManagement: React.FC = () => {
                 </div>
                 <div className="col-span-2">
                   <span className="text-gray-400 block text-[11px]">Kata Sandi Login:</span>
-                  <span className="font-mono text-stone-700">{selectedSellerDetail.password || 'seller123'}</span>
+                  <span className="font-mono text-stone-700">'Kata sandi tersimpan dalam bentuk hash.'</span>
                 </div>
                 <div className="col-span-2">
                   <span className="text-gray-400 block text-[11px]">Alamat:</span>

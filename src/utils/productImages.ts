@@ -195,15 +195,40 @@ export const getProductSampleImage = (category: string, sku: string): string => 
     `)}`;
   }
 
-  // Fallback category representation
-  const bg = category === 'Korset' ? '#EDE9FE' : category === 'CD Wanita' ? '#FCE7F3' : '#DCFCE7';
-  const color = category === 'Korset' ? '#6D28D9' : category === 'CD Wanita' ? '#E11D48' : '#047857';
+  // Fallback visual is a neutral category placeholder, not a product photo.
+  const categoryColors: Record<string, { bg: string; color: string }> = {
+    'CD Pria': { bg: '#DCFCE7', color: '#047857' },
+    'CD Wanita': { bg: '#FCE7F3', color: '#E11D48' },
+    'Anak-Anak': { bg: '#DBEAFE', color: '#1D4ED8' },
+    'Korset': { bg: '#EDE9FE', color: '#6D28D9' },
+    'Bra': { bg: '#FCE7F3', color: '#BE185D' },
+    'Kaos Kaki': { bg: '#E0F2FE', color: '#0369A1' },
+    'Lingerie': { bg: '#F3E8FF', color: '#7E22CE' },
+    'Lain-lain': { bg: '#F3F4F6', color: '#374151' },
+  };
+  const { bg, color } = categoryColors[category] || { bg: '#F3F4F6', color: '#374151' };
   return `data:image/svg+xml;utf8,${encodeURIComponent(`
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
       <rect width="200" height="200" rx="16" fill="${bg}"/>
       <circle cx="100" cy="100" r="60" fill="#FFFFFF" stroke="${color}" stroke-width="3"/>
       <path d="M70 85 L130 85 L120 125 L100 135 L80 125 Z" fill="${color}"/>
-      <text x="100" y="175" fill="${color}" font-family="sans-serif" font-size="11" font-weight="bold" text-anchor="middle">${category.toUpperCase()}</text>
+      <text x="100" y="175" fill="${color}" font-family="sans-serif" font-size="11" font-weight="bold" text-anchor="middle">${(category || 'PRODUK').toUpperCase()}</text>
     </svg>
   `)}`;
+};
+
+/**
+ * Mendapatkan gambar tampilan produk:
+ * Prioritas 1: Gambar kustom yang diunggah/dimasukkan user (prod.image)
+ * Prioritas 2: Placeholder visual kategori (bukan foto produk) jika belum ada gambar asli
+ */
+export const getProductDisplayImage = (product: {
+  image?: string;
+  sku?: string;
+  category?: string;
+}): string => {
+  if (product.image && product.image.trim() !== '') {
+    return product.image;
+  }
+  return getProductSampleImage(product.category || 'Lain-lain', '');
 };

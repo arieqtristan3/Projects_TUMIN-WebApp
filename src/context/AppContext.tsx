@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import {
   UserProfile,
   UserRole,
@@ -12,18 +12,17 @@ import {
   StockMutation,
 } from '../types';
 import {
-  INITIAL_PRODUCTS,
-  INITIAL_SELLERS,
-  INITIAL_INVOICES,
-  INITIAL_CONSIGNED_ITEMS,
-  INITIAL_STOCK_MUTATIONS,
-} from '../data/initialData';
+  apiFetch,
+  getStoredToken,
+  setStoredToken,
+  clearStoredToken,
+  registerAuthErrorHandler,
+} from '../services/apiService';
 
 interface AppContextType {
   currentUser: UserProfile | null;
   currentRole: UserRole | null;
   setCurrentUser: (user: UserProfile | null) => void;
-  loginAs: (role: UserRole, customUser?: Partial<UserProfile>) => void;
   authenticateUser: (
     role: UserRole,
     identifier: string,
@@ -33,13 +32,12 @@ interface AppContextType {
 
   // Products & Stock
   products: Product[];
-  addProduct: (product: Omit<Product, 'id' | 'lastUpdated'>) => void;
-  updateProduct: (id: string, updates: Partial<Product>) => void;
-  adjustStock: (id: string, newStock: number, reason?: string) => void;
+  addProduct: (product: Omit<Product, 'id' | 'lastUpdated'>) => Promise<void>;
+  updateProduct: (id: string, updates: Partial<Product>) => Promise<void>;
+  adjustStock: (id: string, newStock: number, reason?: string) => Promise<void>;
   stockMutations: StockMutation[];
-  recordStockMutation: (mutation: Omit<StockMutation, 'id' | 'date'>) => void;
-  restockProduct: (productId: string, quantity: number, notes?: string, supplier?: string) => void;
-  applyStockOpname: (adjustments: { productId: string; physicalStock: number; reason: string }[]) => void;
+  restockProduct: (productId: string, quantity: number, notes?: string, supplier?: string, reference?: string) => Promise<void>;
+  applyStockOpname: (adjustments: { productId: string; physicalStock: number; reason: string }[]) => Promise<void>;
 
   // Sellers
   sellers: Seller[];
@@ -51,10 +49,11 @@ interface AppContextType {
     address: string;
     email?: string;
     password?: string;
-  }) => Seller;
-  approveSeller: (id: string, creditLimit?: number) => void;
-  rejectSeller: (id: string) => void;
-  updateSeller: (id: string, updates: Partial<Seller>) => void;
+  }) => Promise<Seller>;
+  approveSeller: (id: string, creditLimit?: number) => Promise<void>;
+  rejectSeller: (id: string) => Promise<void>;
+  deleteSeller: (id: string) => Promise<void>;
+  updateSeller: (id: string, updates: Partial<Seller>) => Promise<void>;
 
   // Invoices & Receivables (Piutang)
   invoices: Invoice[];
@@ -68,21 +67,24 @@ interface AppContextType {
     paymentProofImage?: string;
     bankName?: string;
     transferReference?: string;
-  }) => { success: boolean; invoice?: Invoice; error?: string };
+  }) => Promise<{ success: boolean; invoice?: Invoice; error?: string }>;
   recordInstallment: (params: {
     invoiceId: string;
     amount: number;
     method: 'Tunai' | 'Transfer Bank';
     notes?: string;
     paymentProofImage?: string;
-  }) => { success: boolean; error?: string };
+  }) => Promise<{ success: boolean; error?: string }>;
 
   // Consigned Items
   consignedItems: ConsignedItem[];
 
-  // System helpers
+  // System helpers & Security notifications
   dbConnected: boolean;
-  resetToDefaultData: () => void;
+  dataReady: boolean;
+  dbNoticeMessage: string | null;
+  authWarningMessage: string | null;
+  clearAuthWarning: () => void;
   pendingSellersCount: number;
   totalReceivablesSummary: {
     total: number;
@@ -125,7 +127,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return null;
   });
 
-  // Simpan sesi HANYA di sessionStorage saat currentUser berubah
+  // Simpan sesi HANYA di sessionStorage saat currentUser berubah.
   useEffect(() => {
     localStorage.removeItem(STORAGE_KEY + '_currentUser');
     if (currentUser) {
@@ -135,249 +137,155 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [currentUser]);
 
-  const [products, setProducts] = useState<Product[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEY + '_products');
-    return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
-  });
+  // Data bisnis selalu dimuat dari PostgreSQL. Tidak ada fallback ke data demo/localStorage.
+  const [products, setProducts] = useState<Product[]>([]);
+  const [sellers, setSellers] = useState<Seller[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [consignedItems, setConsignedItems] = useState<ConsignedItem[]>([]);
+  const [stockMutations, setStockMutations] = useState<StockMutation[]>([]);
+  const [dataReady, setDataReady] = useState(false);
+  const loadBackendDataRef = useRef<() => Promise<void>>(async () => {});
 
-  const [sellers, setSellers] = useState<Seller[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEY + '_sellers');
-    if (saved) {
-      try {
-        const parsed: Seller[] = JSON.parse(saved);
-        const existingIds = new Set(parsed.map((s) => s.id));
-        const missing = INITIAL_SELLERS.filter((s) => !existingIds.has(s.id));
-        if (missing.length > 0) {
-          const merged = [...parsed, ...missing];
-          localStorage.setItem(STORAGE_KEY + '_sellers', JSON.stringify(merged));
-          return merged;
-        }
-        return parsed;
-      } catch {
-        return INITIAL_SELLERS;
-      }
-    }
-    return INITIAL_SELLERS;
-  });
-
-  const [invoices, setInvoices] = useState<Invoice[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEY + '_invoices');
-    return saved ? JSON.parse(saved) : INITIAL_INVOICES;
-  });
-
-  const [consignedItems, setConsignedItems] = useState<ConsignedItem[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEY + '_consigned');
-    return saved ? JSON.parse(saved) : INITIAL_CONSIGNED_ITEMS;
-  });
-
-  const [stockMutations, setStockMutations] = useState<StockMutation[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEY + '_mutations');
-    return saved ? JSON.parse(saved) : INITIAL_STOCK_MUTATIONS;
-  });
-
-  // Sync state to localStorage
+  // Sinkronisasi antar-tab hanya memberi sinyal untuk membaca ulang PostgreSQL.
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY + '_products', JSON.stringify(products));
-  }, [products]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY + '_sellers', JSON.stringify(sellers));
-  }, [sellers]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY + '_invoices', JSON.stringify(invoices));
-  }, [invoices]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY + '_consigned', JSON.stringify(consignedItems));
-  }, [consignedItems]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY + '_mutations', JSON.stringify(stockMutations));
-  }, [stockMutations]);
-
-  // =====================================================================
-  // REAL-TIME MULTI-TAB SYNCHRONIZATION (BroadcastChannel & Storage Event)
-  // =====================================================================
-  useEffect(() => {
-    // 1. Storage Event: Terpicu otomatis di tab lain saat satu tab menulis ke localStorage
-    const handleStorage = (e: StorageEvent) => {
-      if (!e.newValue) return;
-      try {
-        if (e.key === STORAGE_KEY + '_invoices') {
-          const parsedInvoices: Invoice[] = JSON.parse(e.newValue);
-          setInvoices(parsedInvoices);
-        } else if (e.key === STORAGE_KEY + '_products') {
-          const parsedProducts: Product[] = JSON.parse(e.newValue);
-          setProducts(parsedProducts);
-        } else if (e.key === STORAGE_KEY + '_sellers') {
-          const parsedSellers: Seller[] = JSON.parse(e.newValue);
-          setSellers(parsedSellers);
-        } else if (e.key === STORAGE_KEY + '_mutations') {
-          const parsedMutations: StockMutation[] = JSON.parse(e.newValue);
-          setStockMutations(parsedMutations);
-        }
-      } catch (err) {
-        console.warn('Gagal sinkron data dari storage event:', err);
+    if (typeof BroadcastChannel === 'undefined') return;
+    const channel = new BroadcastChannel('tumin_multi_tab_sync');
+    channel.onmessage = (event) => {
+      if (event.data?.type === 'STATE_REFRESH' || event.data?.type === 'NEW_TRANSACTION') {
+        void loadBackendDataRef.current();
       }
     };
-
-    window.addEventListener('storage', handleStorage);
-
-    // 2. BroadcastChannel: Komunikasi instan sub-milidetik antar tab
-    let channel: BroadcastChannel | null = null;
-    if (typeof BroadcastChannel !== 'undefined') {
-      try {
-        channel = new BroadcastChannel('tumin_multi_tab_sync');
-        channel.onmessage = (event) => {
-          const data = event.data;
-          if (data?.type === 'NEW_TRANSACTION' && data.invoice) {
-            setInvoices((prev) => {
-              if (prev.some((inv) => inv.id === data.invoice.id || inv.invoiceNumber === data.invoice.invoiceNumber)) {
-                return prev;
-              }
-              return [data.invoice, ...prev];
-            });
-            // Sinkronkan juga produk jika disertakan
-            if (data.products && Array.isArray(data.products)) {
-              setProducts(data.products);
-            }
-          } else if (data?.type === 'STATE_REFRESH') {
-            const savedInv = localStorage.getItem(STORAGE_KEY + '_invoices');
-            if (savedInv) setInvoices(JSON.parse(savedInv));
-            const savedProd = localStorage.getItem(STORAGE_KEY + '_products');
-            if (savedProd) setProducts(JSON.parse(savedProd));
-          }
-        };
-      } catch (err) {
-        console.warn('BroadcastChannel tidak didukung di browser ini', err);
-      }
-    }
-
-    return () => {
-      window.removeEventListener('storage', handleStorage);
-      channel?.close();
-    };
+    return () => channel.close();
   }, []);
 
   const [dbConnected, setDbConnected] = useState(false);
+  const [dbNoticeMessage, setDbNoticeMessage] = useState<string | null>(null);
+  const [authWarningMessage, setAuthWarningMessage] = useState<string | null>(null);
+  const clearAuthWarning = () => setAuthWarningMessage(null);
 
-  // Auto-sync ke PostgreSQL jika backend API aktif
+  // Penanganan Event Error Autentikasi Terpusat (401, 403, 503)
   useEffect(() => {
-    fetch('/api/status')
-      .then((res) => res.json())
-      .then((st) => {
-        if (st.database === 'connected') {
+    const unregister = registerAuthErrorHandler((event) => {
+      if (event.type === 'UNAUTHORIZED') {
+        // HTTP 401: Sesi tidak valid / token kedaluwarsa -> hapus token & sesi, arahkan ke login
+        clearStoredToken();
+        sessionStorage.removeItem(STORAGE_KEY + '_currentUser');
+        localStorage.removeItem(STORAGE_KEY + '_currentUser');
+        setCurrentUser(null);
+        setAuthWarningMessage('Sesi login telah kedaluwarsa. Silakan masuk kembali.');
+      } else if (event.type === 'FORBIDDEN') {
+        // HTTP 403: Hak akses ditolak / akun dinonaktifkan
+        setAuthWarningMessage(event.message || 'Akses ditolak. Anda tidak memiliki izin untuk tindakan ini.');
+      } else if (event.type === 'SERVICE_UNAVAILABLE') {
+        // HTTP 503: Database offline (Fail-Closed) -> tampilkan pemberitahuan tanpa logout
+        setDbConnected(false);
+        setDbNoticeMessage(
+          event.message || 'Layanan database PostgreSQL sedang tidak tersedia (Database Offline). Akses data privat dilindungi (Fail-Closed).'
+        );
+      }
+    });
+
+    return () => {
+      unregister();
+    };
+  }, []);
+
+  // PostgreSQL adalah satu-satunya sumber data bisnis. Semua koleksi dimuat bersama.
+  async function loadBackendData() {
+    if (!getStoredToken()) { setDataReady(true); return; }
+    const isSeller = currentUser?.role === 'seller';
+    const endpoints = ['/api/produk', '/api/mitra-seller', '/api/faktur', '/api/mutasi-stok', '/api/cicilan', '/api/barang-konsinyasi'];
+    const results = await Promise.all([
+      apiFetch('/api/produk', { suppressGlobalError: true }),
+      apiFetch('/api/mitra-seller', { suppressGlobalError: true }),
+      apiFetch('/api/faktur', { suppressGlobalError: true }),
+      isSeller ? Promise.resolve({ ok: true, source: 'postgresql', data: [] } as any) : apiFetch('/api/mutasi-stok', { suppressGlobalError: true }),
+      apiFetch('/api/cicilan', { suppressGlobalError: true }),
+      apiFetch('/api/barang-konsinyasi', { suppressGlobalError: true }),
+    ]);
+    const [prodRes, sellerRes, invRes, mutRes, installmentRes, consignedRes] = results;
+    const allSucceeded = results.every((result) => result.ok && result.source === 'postgresql' && Array.isArray(result.data));
+    if (!allSucceeded) {
+      if (results.some((result) => result.status === 401)) {
+        clearStoredToken();
+        sessionStorage.removeItem(STORAGE_KEY + '_currentUser');
+        setCurrentUser(null);
+        setAuthWarningMessage('Sesi login berakhir. Silakan masuk kembali.');
+      } else {
+        const failed = endpoints.filter((_, index) => !results[index].ok);
+        setAuthWarningMessage(`Data belum dapat dimuat lengkap dari database: ${failed.join(', ')}. Silakan coba muat ulang.`);
+        if (results.some((result) => result.status === 503)) setDbConnected(false);
+      }
+      setDataReady(true);
+      return;
+    }
+    const installmentRows = installmentRes.data as any[];
+    const mappedInstallments = new Map<string, InstallmentPayment[]>();
+    for (const row of installmentRows) {
+      const invoiceId = row.invoiceId ?? row.id_faktur;
+      const item: InstallmentPayment = {
+        id: row.id, date: row.date ?? row.tanggal, amount: Number(row.amount ?? row.nominal_cicilan),
+        method: row.method ?? row.metode_pembayaran, recordedBy: row.recordedBy ?? row.dicatat_oleh,
+        notes: row.notes ?? row.catatan ?? undefined,
+        paymentProofImage: row.paymentProofImage ?? row.foto_bukti_transfer ?? undefined,
+      };
+      const existing = mappedInstallments.get(invoiceId) || [];
+      existing.push(item);
+      mappedInstallments.set(invoiceId, existing);
+    }
+    setProducts(prodRes.data as Product[]);
+    setSellers(sellerRes.data as Seller[]);
+    setInvoices((invRes.data as Invoice[]).map((invoice) => ({
+      ...invoice, installments: mappedInstallments.get(invoice.id) || [],
+    })));
+    setStockMutations(mutRes.data as StockMutation[]);
+    setConsignedItems(consignedRes.data as ConsignedItem[]);
+    setAuthWarningMessage(null);
+    setDataReady(true);
+  }
+  loadBackendDataRef.current = loadBackendData;
+
+  useEffect(() => {
+    if (!currentUser) {
+      setDataReady(true);
+      return;
+    }
+    if (getStoredToken()) {
+      setDataReady(false);
+      void loadBackendData();
+    } else {
+      setCurrentUser(null);
+      setDataReady(true);
+      setAuthWarningMessage('Sesi autentikasi tidak ditemukan. Silakan masuk kembali.');
+    }
+  }, [currentUser]);
+
+  // Auto-sync ke backend jika status server terhubung
+  useEffect(() => {
+    apiFetch('/api/status', { isPublic: true, suppressGlobalError: true })
+      .then((stRes) => {
+        if (stRes.ok && stRes.data?.database === 'connected') {
           setDbConnected(true);
-          console.log('🔗 [TUMIN App] Terhubung langsung ke Database PostgreSQL (tumin_db)');
-
-          // Ambil produk dari PostgreSQL
-          fetch('/api/produk')
-            .then((r) => r.json())
-            .then((res) => {
-              if (res.source === 'postgresql' && Array.isArray(res.data) && res.data.length > 0) {
-                setProducts(res.data);
-              }
-            })
-            .catch(() => {});
-
-          // Ambil mitra seller dari PostgreSQL
-          fetch('/api/mitra-seller')
-            .then((r) => r.json())
-            .then((res) => {
-              if (res.source === 'postgresql' && Array.isArray(res.data) && res.data.length > 0) {
-                setSellers(res.data);
-              }
-            })
-            .catch(() => {});
-
-          // Ambil faktur dari PostgreSQL
-          fetch('/api/faktur')
-            .then((r) => r.json())
-            .then((res) => {
-              if (res.source === 'postgresql' && Array.isArray(res.data) && res.data.length > 0) {
-                setInvoices(res.data);
-              }
-            })
-            .catch(() => {});
-
-          // Ambil mutasi stok dari PostgreSQL
-          fetch('/api/mutasi-stok')
-            .then((r) => r.json())
-            .then((res) => {
-              if (res.source === 'postgresql' && Array.isArray(res.data) && res.data.length > 0) {
-                setStockMutations(res.data);
-              }
-            })
-            .catch(() => {});
+          setDbNoticeMessage(null);
+          console.log('🔗 [TUMIN App] Terhubung langsung ke Database PostgreSQL.');
         } else {
           setDbConnected(false);
+          if (stRes.data?.database === 'offline_fallback') {
+            setDbNoticeMessage('Database PostgreSQL offline. Sistem beroperasi dalam mode aman (Fail-Closed pada data privat).');
+          }
         }
       })
       .catch(() => {
         setDbConnected(false);
       });
 
-    // Background auto-polling setiap 4 detik untuk memeriksa transaksi baru dari server / database
+    // Refresh data dari PostgreSQL secara berkala untuk menjaga konsistensi antar perangkat.
     const pollTimer = setInterval(() => {
-      fetch('/api/faktur')
-        .then((r) => r.json())
-        .then((res) => {
-          if (res.source === 'postgresql' && Array.isArray(res.data) && res.data.length > 0) {
-            setInvoices((prev) => {
-              const existingIds = new Set(prev.map((i) => i.id));
-              const newItems = res.data.filter((i: Invoice) => !existingIds.has(i.id));
-              if (newItems.length > 0) {
-                return [...newItems, ...prev];
-              }
-              return prev;
-            });
-          }
-        })
-        .catch(() => {});
-    }, 4000);
+      if (getStoredToken()) void loadBackendDataRef.current();
+    }, 15000);
 
     return () => clearInterval(pollTimer);
-  }, []);
-
-  const loginAs = (role: UserRole, customUser?: Partial<UserProfile>) => {
-    let user: UserProfile;
-    if (role === 'owner') {
-      user = {
-        id: 'usr-owner',
-        name: 'Pak Tino',
-        email: 'owner@tinounderwear.id',
-        role: 'owner',
-        phone: '0812-9876-5432',
-        ...customUser,
-      };
-    } else if (role === 'kasir') {
-      user = {
-        id: 'usr-kasir',
-        name: 'Siti Rahma',
-        email: 'kasir@tinounderwear.id',
-        role: 'kasir',
-        shift: 'Shift Pagi (08:00 - 16:00)',
-        ...customUser,
-      };
-    } else {
-      // Seller
-      const targetSeller = sellers.find((s) => s.id === 'sel-01') || sellers[0];
-      user = {
-        id: targetSeller ? targetSeller.id : 'usr-seller',
-        username: targetSeller?.username || 'budi88',
-        name: targetSeller ? targetSeller.name : 'Budi Santoso',
-        email: (targetSeller && targetSeller.email) ? targetSeller.email : `${targetSeller?.phone || 'seller'}@tinounderwear.id`,
-        role: 'seller',
-        storeName: targetSeller ? targetSeller.storeName : 'Toko Budi Jaya',
-        phone: targetSeller ? targetSeller.phone : '0812-8899-7711',
-        ...customUser,
-      };
-    }
-    sessionStorage.setItem(STORAGE_KEY + '_currentUser', JSON.stringify(user));
-    localStorage.removeItem(STORAGE_KEY + '_currentUser');
-    setCurrentUser(user);
-  };
+  }, [currentUser]);
 
   const authenticateUser = async (
     role: UserRole,
@@ -385,35 +293,62 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     password: string
   ): Promise<{ success: boolean; user?: UserProfile; error?: string }> => {
     const cleanId = identifier.trim();
-    const cleanPass = password.trim();
+    // Password harus dikirim persis seperti yang diketik; spasi bisa menjadi bagian password.
+    const suppliedPassword = password;
 
-    if (!cleanId || !cleanPass) {
+    if (!cleanId || suppliedPassword.length === 0) {
       return { success: false, error: 'Silakan isi Email/Username dan Kata Sandi.' };
     }
 
     try {
-      const res = await fetch('/api/auth/login', {
+      const res = await apiFetch<{
+        success: boolean;
+        token?: string;
+        user?: any;
+        error?: string;
+      }>('/api/auth/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           role,
           identifier: cleanId,
-          password: cleanPass,
+          password: suppliedPassword,
         }),
+        isPublic: true,
       });
 
-      const data = await res.json();
+      if (res.ok && res.data?.success && res.data?.user) {
+        // Simpan JWT di sessionStorage secara aman
+        if (res.data.token) {
+          setStoredToken(res.data.token);
+        }
 
-      if (res.ok && data.success && data.user) {
-        sessionStorage.setItem(STORAGE_KEY + '_currentUser', JSON.stringify(data.user));
+        // Simpan profil pengguna di sessionStorage (Kredensial password dihapus sepenuhnya)
+        const safeUser: UserProfile = {
+          id: res.data.user.id,
+          username: res.data.user.username,
+          name: res.data.user.name,
+          email: res.data.user.email,
+          role: res.data.user.role,
+          shift: res.data.user.shift,
+          phone: res.data.user.phone,
+          storeName: res.data.user.storeName,
+        };
+
+        sessionStorage.setItem(STORAGE_KEY + '_currentUser', JSON.stringify(safeUser));
         localStorage.removeItem(STORAGE_KEY + '_currentUser');
-        setCurrentUser(data.user);
-        return { success: true, user: data.user };
+        setProducts([]); setSellers([]); setInvoices([]); setConsignedItems([]); setStockMutations([]);
+        setDataReady(false);
+        setCurrentUser(safeUser);
+        setAuthWarningMessage(null);
+
+        // Data terbaru dimuat oleh effect setelah currentUser berubah.
+
+        return { success: true, user: safeUser };
       }
 
       return {
         success: false,
-        error: data.error || 'Email/Username atau Kata Sandi salah.',
+        error: res.error || res.data?.error || 'Email/Username atau Kata Sandi salah.',
       };
     } catch {
       return {
@@ -423,162 +358,83 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+
   const logout = () => {
+    clearStoredToken();
     sessionStorage.removeItem(STORAGE_KEY + '_currentUser');
     localStorage.removeItem(STORAGE_KEY + '_currentUser');
     sessionStorage.removeItem('tumin_owner_active_nav');
     sessionStorage.removeItem('tumin_kasir_active_tab');
     sessionStorage.removeItem('tumin_seller_active_tab');
     setCurrentUser(null);
+    setProducts([]); setSellers([]); setInvoices([]); setConsignedItems([]); setStockMutations([]);
+    setDataReady(true);
+    setAuthWarningMessage(null);
   };
 
-  // Product CRUD
-  const addProduct = (data: Omit<Product, 'id' | 'lastUpdated'>) => {
+  // Product CRUD: state hanya berubah setelah server mengonfirmasi penyimpanan.
+  const addProduct = async (data: Omit<Product, 'id' | 'lastUpdated'>) => {
     const now = new Date();
-    const dateStr = now.toISOString().slice(0, 16).replace('T', ' ');
-    const newProduct: Product = {
-      ...data,
-      id: 'prod-' + Date.now(),
-      lastUpdated: dateStr,
-    };
-    setProducts((prev) => [newProduct, ...prev]);
-    fetch('/api/produk', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newProduct),
-    }).catch(() => {});
-  };
-
-  const updateProduct = (id: string, updates: Partial<Product>) => {
-    const now = new Date();
-    const dateStr = now.toISOString().slice(0, 16).replace('T', ' ');
-    setProducts((prev) =>
-      prev.map((p) => {
-        if (p.id === id) {
-          const updated = { ...p, ...updates, lastUpdated: dateStr };
-          fetch('/api/produk', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(updated),
-          }).catch(() => {});
-          return updated;
-        }
-        return p;
-      })
-    );
-  };
-
-  const recordStockMutation = (mutation: Omit<StockMutation, 'id' | 'date'>) => {
-    const now = new Date();
-    const dateStr = now.toISOString().slice(0, 16).replace('T', ' ');
-    const newMut: StockMutation = {
-      ...mutation,
-      id: 'mut-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
-      date: dateStr,
-    };
-    setStockMutations((prev) => [newMut, ...prev]);
-    fetch('/api/mutasi-stok', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newMut),
-    }).catch(() => {});
-  };
-
-  const adjustStock = (id: string, newStock: number, reason?: string) => {
-    const now = new Date();
-    const dateStr = now.toISOString().slice(0, 16).replace('T', ' ');
-    const target = products.find((p) => p.id === id);
-    if (target) {
-      const oldStock = target.stock;
-      const safeNewStock = Math.max(0, newStock);
-      const diff = safeNewStock - oldStock;
-      if (diff !== 0) {
-        const isDamaged = reason?.toLowerCase().includes('rusak') || reason?.toLowerCase().includes('reject');
-        const mutType = diff > 0 ? 'RESTOCK' : (isDamaged ? 'RUSAK_REJECT' : 'OPNAME_KOREKSI');
-        recordStockMutation({
-          productId: target.id,
-          productSku: target.sku,
-          productName: target.name,
-          type: mutType,
-          change: diff,
-          previousStock: oldStock,
-          finalStock: safeNewStock,
-          reference: 'ADJ-' + Date.now().toString().slice(-4),
-          notes: reason || (diff > 0 ? 'Penambahan stok manual' : 'Pengurangan stok manual'),
-          performedBy: currentUser?.name || 'Pak Tino (Owner)',
-        });
-      }
+    const newProduct: Product = { ...data, id: `prod-${crypto.randomUUID()}`, lastUpdated: now.toISOString() };
+    const response = await apiFetch('/api/produk', { method: 'POST', body: JSON.stringify(newProduct), suppressGlobalError: true });
+    if (!response.ok) {
+      const message = response.error || 'Produk gagal disimpan ke PostgreSQL.';
+      setAuthWarningMessage(message); throw new Error(message);
     }
-    setProducts((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, stock: Math.max(0, newStock), lastUpdated: dateStr } : p))
-    );
+    await loadBackendData();
   };
 
-  const restockProduct = (productId: string, quantity: number, notes?: string, supplier?: string) => {
-    if (quantity <= 0) return;
-    const now = new Date();
-    const dateStr = now.toISOString().slice(0, 16).replace('T', ' ');
-    const target = products.find((p) => p.id === productId);
-    if (!target) return;
-    const oldStock = target.stock;
-    const newStock = oldStock + quantity;
-
-    recordStockMutation({
-      productId: target.id,
-      productSku: target.sku,
-      productName: target.name,
-      type: 'RESTOCK',
-      change: quantity,
-      previousStock: oldStock,
-      finalStock: newStock,
-      reference: supplier
-        ? `SJ-${supplier.slice(0, 3).toUpperCase()}-${Date.now().toString().slice(-4)}`
-        : `RESTOCK-${Date.now().toString().slice(-4)}`,
-      notes: notes || `Penerimaan restok barang konveksi (+${quantity} ${target.unit})`,
-      performedBy: currentUser?.name || 'Pak Tino (Owner)',
+  const updateProduct = async (id: string, updates: Partial<Product>) => {
+    const current = products.find((product) => product.id === id);
+    if (!current) throw new Error('Produk tidak ditemukan.');
+    const response = await apiFetch('/api/produk', {
+      method: 'POST', body: JSON.stringify({ ...current, ...updates, stock: current.stock, id, lastUpdated: new Date().toISOString() }), suppressGlobalError: true,
     });
-
-    setProducts((prev) =>
-      prev.map((p) => (p.id === productId ? { ...p, stock: newStock, lastUpdated: dateStr } : p))
-    );
+    if (!response.ok) {
+      const message = response.error || 'Perubahan produk gagal disimpan ke PostgreSQL.';
+      setAuthWarningMessage(message); throw new Error(message);
+    }
+    await loadBackendData();
   };
 
-  const applyStockOpname = (adjustments: { productId: string; physicalStock: number; reason: string }[]) => {
-    const now = new Date();
-    const dateStr = now.toISOString().slice(0, 16).replace('T', ' ');
-    const opnameRef = `OPN-${now.toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(100 + Math.random() * 900)}`;
 
-    setProducts((prev) =>
-      prev.map((prod) => {
-        const adj = adjustments.find((a) => a.productId === prod.id);
-        if (adj && adj.physicalStock !== prod.stock) {
-          const oldStock = prod.stock;
-          const newStock = Math.max(0, adj.physicalStock);
-          const diff = newStock - oldStock;
-          const isDamaged = adj.reason.toLowerCase().includes('rusak') || adj.reason.toLowerCase().includes('reject');
+  const adjustStock = async (id: string, newStock: number, reason?: string) => {
+    const target = products.find((product) => product.id === id);
+    if (!target || !Number.isInteger(newStock) || newStock < 0) throw new Error('Jumlah stok tidak valid.');
+    const response = await apiFetch(`/api/produk/${encodeURIComponent(id)}/stock-adjustment`, {
+      method: 'POST', body: JSON.stringify({ newStock, reason: reason || 'Penyesuaian stok manual' }), suppressGlobalError: true,
+    });
+    if (!response.ok) {
+      const message = response.error || 'Penyesuaian stok gagal disimpan.';
+      setAuthWarningMessage(message); throw new Error(message);
+    }
+    await loadBackendData();
+  };
 
-          recordStockMutation({
-            productId: prod.id,
-            productSku: prod.sku,
-            productName: prod.name,
-            type: diff < 0 && isDamaged ? 'RUSAK_REJECT' : 'OPNAME_KOREKSI',
-            change: diff,
-            previousStock: oldStock,
-            finalStock: newStock,
-            reference: opnameRef,
-            notes: adj.reason || `Hasil stock opname fisik toko (${diff > 0 ? '+' : ''}${diff})`,
-            performedBy: currentUser?.name || 'Pak Tino (Owner)',
-          });
+  const restockProduct = async (productId: string, quantity: number, notes?: string, supplier?: string, reference?: string) => {
+    const target = products.find((product) => product.id === productId);
+    if (!target || !Number.isInteger(quantity) || quantity <= 0) throw new Error('Jumlah restok tidak valid.');
+    const response = await apiFetch(`/api/produk/${encodeURIComponent(productId)}/stock-adjustment`, {
+      method: 'POST', body: JSON.stringify({ change: quantity, type: 'RESTOCK', reference: reference || supplier || '', reason: notes || `Restok dari ${supplier || 'pemasok'}` }), suppressGlobalError: true,
+    });
+    if (!response.ok) {
+      const message = response.error || 'Restok gagal disimpan.';
+      setAuthWarningMessage(message); throw new Error(message);
+    }
+    await loadBackendData();
+  };
 
-          return { ...prod, stock: newStock, lastUpdated: dateStr };
-        }
-        return prod;
-      })
-    );
+  const applyStockOpname = async (adjustments: { productId: string; physicalStock: number; reason: string }[]) => {
+    const response = await apiFetch('/api/stok/opname', { method: 'POST', body: JSON.stringify({ adjustments }), suppressGlobalError: true });
+    if (!response.ok) {
+      const message = response.error || 'Stock opname gagal disimpan.';
+      setAuthWarningMessage(message); throw new Error(message);
+    }
+    await loadBackendData();
   };
 
   // Seller management
-  const registerSeller = (data: {
+  const registerSeller = async (data: {
     username?: string;
     name: string;
     storeName: string;
@@ -586,7 +442,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     address: string;
     email?: string;
     password?: string;
-  }): Seller => {
+  }): Promise<Seller> => {
     const today = new Date().toISOString().slice(0, 10);
     const cleanUsername = data.username?.trim().toLowerCase() || data.phone.replace(/\D/g, '') || `seller_${Date.now().toString().slice(-4)}`;
     const newSeller: Seller = {
@@ -595,84 +451,77 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       name: data.name,
       storeName: data.storeName,
       phone: data.phone,
-      email: data.email || `${cleanUsername}@seller.tinounderwear.id`,
+      email: data.email || undefined,
       address: data.address,
-      status: 'Pending', // New registrations stay Pending until approved
+      status: 'Pending',
       creditLimit: 5000000,
       totalReceivables: 0,
       lastTransactionDate: '-',
       registeredDate: today,
-      notes: 'Pengajuan pendaftaran mandiri dari portal seller (Menunggu persetujuan Owner via Telepon/WhatsApp).',
-      password: data.password || 'seller123',
+      notes: 'Pengajuan pendaftaran mandiri - menunggu persetujuan Owner.',
     };
 
-    setSellers((prev) => [newSeller, ...prev]);
-    fetch('/api/mitra-seller', {
+    const response = await apiFetch('/api/mitra-seller', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newSeller),
-    }).catch(() => {});
+      body: JSON.stringify({ ...newSeller, password: data.password || '' }),
+      suppressGlobalError: true,
+    });
+    if (!response.ok) throw new Error(response.error || response.data?.error || 'Pendaftaran Seller gagal disimpan.');
+    await loadBackendData();
     return newSeller;
   };
 
-  const approveSeller = (id: string, creditLimit?: number) => {
-    setSellers((prev) =>
-      prev.map((s) => {
-        if (s.id === id) {
-          const updated = {
-            ...s,
-            status: 'Aktif' as const,
-            creditLimit: creditLimit !== undefined ? creditLimit : (s.creditLimit || 5000000),
-          };
-          fetch('/api/mitra-seller', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(updated),
-          }).catch(() => {});
-
-          return updated;
-        }
-        return s;
-      })
-    );
+  const updateSellerOnServer = async (id: string, updates: Partial<Seller>) => {
+    const response = await apiFetch(`/api/mitra-seller/${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+      suppressGlobalError: true,
+    });
+    if (!response.ok) {
+      const message = response.error || response.data?.error || 'Perubahan seller gagal disimpan ke database.';
+      setAuthWarningMessage(message);
+      throw new Error(message);
+    }
+    setAuthWarningMessage(null);
+    await loadBackendData();
   };
 
-  const rejectSeller = (id: string) => {
-    setSellers((prev) =>
-      prev.map((s) => {
-        if (s.id === id) {
-          const updated = { ...s, status: 'Ditangguhkan' as const };
-          fetch('/api/mitra-seller', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(updated),
-          }).catch(() => {});
-          return updated;
-        }
-        return s;
-      })
-    );
+  const approveSeller = async (id: string, creditLimit?: number) => {
+    const seller = sellers.find((item) => item.id === id);
+    if (!seller) throw new Error('Seller tidak ditemukan.');
+    const updates: Partial<Seller> = {
+      status: 'Aktif',
+      creditLimit: creditLimit !== undefined ? creditLimit : (seller.creditLimit || 5000000),
+    };
+    await updateSellerOnServer(id, updates);
+    setSellers((prev) => prev.map((item) => item.id === id ? { ...item, ...updates } : item));
   };
 
-  const updateSeller = (id: string, updates: Partial<Seller>) => {
-    setSellers((prev) =>
-      prev.map((s) => {
-        if (s.id === id) {
-          const updated = { ...s, ...updates };
-          fetch('/api/mitra-seller', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(updated),
-          }).catch(() => {});
-          return updated;
-        }
-        return s;
-      })
-    );
+  const rejectSeller = async (id: string) => {
+    await updateSellerOnServer(id, { status: 'Ditangguhkan' });
+    setSellers((prev) => prev.map((item) => item.id === id ? { ...item, status: 'Ditangguhkan' } : item));
+  };
+
+  const deleteSeller = async (id: string) => {
+    const response = await apiFetch(`/api/mitra-seller/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+      suppressGlobalError: true,
+    });
+    if (!response.ok) {
+      const message = response.error || response.data?.error || 'Seller gagal dihapus.';
+      throw new Error(message);
+    }
+    await loadBackendData();
+    broadcastTabMessage({ type: 'STATE_REFRESH' });
+  };
+
+  const updateSeller = async (id: string, updates: Partial<Seller>) => {
+    await updateSellerOnServer(id, updates);
+    setSellers((prev) => prev.map((item) => item.id === id ? { ...item, ...updates } : item));
   };
 
   // Sales and POS
-  const createSaleTransaction = ({
+  const createSaleTransaction = async ({
     items,
     paymentMethod,
     cashReceived,
@@ -692,7 +541,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     paymentProofImage?: string;
     bankName?: string;
     transferReference?: string;
-  }) => {
+  }): Promise<{ success: boolean; invoice?: Invoice; error?: string }> => {
     if (!items || items.length === 0) {
       return { success: false, error: 'Keranjang belanja masih kosong.' };
     }
@@ -778,7 +627,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       paymentProofImage: paymentMethod === 'Transfer Bank' ? paymentProofImage : undefined,
       bankName:
         paymentMethod === 'Transfer Bank'
-          ? bankName || 'BCA 521-089-2234 a.n Tino Underwear (Owner)'
+          ? bankName || undefined
           : undefined,
       transferReference: paymentMethod === 'Transfer Bank' ? transferReference : undefined,
       sellerId: paymentMethod === 'Kredit' ? sellerId : undefined,
@@ -793,86 +642,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       installments: [],
     };
 
-    // 1. Reduce stock automatically and record stock mutation
-    setProducts((prev) =>
-      prev.map((prod) => {
-        const boughtItem = items.find((i) => i.product.id === prod.id);
-        if (boughtItem) {
-          const updatedStock = Math.max(0, prod.stock - boughtItem.quantity);
-          return {
-            ...prod,
-            stock: updatedStock,
-            lastUpdated: dateStr,
-          };
-        }
-        return prod;
-      })
-    );
-
-    // Record mutation for each sold product
-    items.forEach((item) => {
-      const prod = products.find((p) => p.id === item.product.id);
-      if (prod) {
-        const oldStock = prod.stock;
-        const finalStock = Math.max(0, oldStock - item.quantity);
-        recordStockMutation({
-          productId: prod.id,
-          productSku: prod.sku,
-          productName: prod.name,
-          type: 'PENJUALAN',
-          change: -item.quantity,
-          previousStock: oldStock,
-          finalStock,
-          reference: invoiceNumber,
-          notes: `Transaksi kasir ${paymentMethod} (${item.quantity} ${prod.unit})`,
-          performedBy: currentUser?.name || 'Kasir Toko',
-        });
-      }
+    const apiResult = await apiFetch('/api/faktur', {
+      method: 'POST',
+      body: JSON.stringify(newInvoice),
+      suppressGlobalError: true,
     });
-
-    // 2. If credit, increase seller's totalReceivables in real-time
-    if (paymentMethod === 'Kredit' && sellerId) {
-      const todayDate = now.toISOString().slice(0, 10);
-      setSellers((prev) =>
-        prev.map((s) => {
-          if (s.id === sellerId) {
-            return {
-              ...s,
-              totalReceivables: s.totalReceivables + total,
-              lastTransactionDate: todayDate,
-            };
-          }
-          return s;
-        })
-      );
+    if (!apiResult.ok) {
+      return { success: false, error: apiResult.error || apiResult.data?.error || 'Transaksi gagal disimpan ke database.' };
     }
 
-    // 3. Add invoice
-    setInvoices((prev) => {
-      const updated = [newInvoice, ...prev];
-      try {
-        localStorage.setItem(STORAGE_KEY + '_invoices', JSON.stringify(updated));
-      } catch {}
-      return updated;
-    });
-
-    // Beritahukan tab lain (misal Tab Owner yang sedang dibuka bersamaan) secara instan
-    broadcastTabMessage({
-      type: 'NEW_TRANSACTION',
-      invoice: newInvoice,
-    });
-
-    fetch('/api/faktur', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newInvoice),
-    }).catch(() => {});
-
+    // Faktur, item, pengurangan stok, mutasi, dan piutang dicatat atomik oleh backend.
+    await loadBackendData();
+    broadcastTabMessage({ type: 'STATE_REFRESH' });
     return { success: true, invoice: newInvoice };
   };
 
   // Record installment payment (Catat Pembayaran Cicilan)
-  const recordInstallment = ({
+  const recordInstallment = async ({
     invoiceId,
     amount,
     method,
@@ -884,7 +670,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     method: 'Tunai' | 'Transfer Bank';
     notes?: string;
     paymentProofImage?: string;
-  }) => {
+  }): Promise<{ success: boolean; error?: string }> => {
     const targetInvoice = invoices.find((inv) => inv.id === invoiceId);
     if (!targetInvoice) {
       return { success: false, error: 'Faktur tidak ditemukan.' };
@@ -918,82 +704,33 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       paymentProofImage,
     };
 
-    const newAmountPaid = targetInvoice.amountPaid + amount;
-    const newRemaining = Math.max(0, targetInvoice.remainingBalance - amount);
-    const newStatus =
-      newRemaining === 0 ? ('PAID' as const) : ('PARTIALLY_PAID' as const);
-
-    // Update invoice
-    setInvoices((prev) =>
-      prev.map((inv) => {
-        if (inv.id === invoiceId) {
-          return {
-            ...inv,
-            amountPaid: newAmountPaid,
-            remainingBalance: newRemaining,
-            status: newStatus,
-            installments: [newInstallment, ...inv.installments],
-          };
-        }
-        return inv;
-      })
-    );
-
-    // Reduce seller's totalReceivables in real-time
-    if (targetInvoice.sellerId) {
-      setSellers((prev) =>
-        prev.map((s) => {
-          if (s.id === targetInvoice.sellerId) {
-            return {
-              ...s,
-              totalReceivables: Math.max(0, s.totalReceivables - amount),
-            };
-          }
-          return s;
-        })
-      );
-    }
-
-    fetch('/api/cicilan', {
+    const response = await apiFetch('/api/cicilan', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newInstallment),
-    }).catch(() => {});
+      body: JSON.stringify({ ...newInstallment, invoiceId }),
+      suppressGlobalError: true,
+    });
+    if (!response.ok) return { success: false, error: response.error || response.data?.error || 'Cicilan gagal disimpan.' };
 
-    fetch('/api/faktur', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...targetInvoice,
-        amountPaid: newAmountPaid,
-        remainingBalance: newRemaining,
-        status: newStatus,
-      }),
-    }).catch(() => {});
-
+    await loadBackendData();
+    broadcastTabMessage({ type: 'STATE_REFRESH' });
     return { success: true };
   };
 
-  const resetToDefaultData = () => {
-    setProducts(INITIAL_PRODUCTS);
-    setSellers(INITIAL_SELLERS);
-    setInvoices(INITIAL_INVOICES);
-    setConsignedItems(INITIAL_CONSIGNED_ITEMS);
-    setStockMutations(INITIAL_STOCK_MUTATIONS);
-    localStorage.removeItem(STORAGE_KEY + '_products');
-    localStorage.removeItem(STORAGE_KEY + '_sellers');
-    localStorage.removeItem(STORAGE_KEY + '_invoices');
-    localStorage.removeItem(STORAGE_KEY + '_consigned');
-    localStorage.removeItem(STORAGE_KEY + '_mutations');
-  };
 
   const pendingSellersCount = sellers.filter((s) => s.status === 'Pending').length;
 
   const totalReceivablesSummary = {
-    total: invoices.reduce((acc, inv) => acc + inv.remainingBalance, 0),
-    unpaid: invoices.filter((i) => i.status === 'UNPAID').length,
-    partiallyPaid: invoices.filter((i) => i.status === 'PARTIALLY_PAID').length,
-    paid: invoices.filter((i) => i.status === 'PAID').length,
+    total: invoices.reduce((acc, inv) => {
+      if (inv.paymentMethod !== 'Kredit') return acc;
+      const bal =
+        typeof inv.remainingBalance === 'number' && !isNaN(inv.remainingBalance)
+          ? inv.remainingBalance
+          : Math.max(0, (Number(inv.total) || 0) - (Number(inv.amountPaid) || 0));
+      return acc + (isNaN(bal) ? 0 : bal);
+    }, 0),
+    unpaid: invoices.filter((i) => i.paymentMethod === 'Kredit' && (i.status === 'UNPAID' || (i as any).status === 'BELUM_LUNAS')).length,
+    partiallyPaid: invoices.filter((i) => i.paymentMethod === 'Kredit' && (i.status === 'PARTIALLY_PAID' || (i as any).status === 'PARTIAL' || (i as any).status === 'SEBAGIAN')).length,
+    paid: invoices.filter((i) => i.paymentMethod === 'Kredit' && (i.status === 'PAID' || (i as any).status === 'LUNAS')).length,
   };
 
   return (
@@ -1002,7 +739,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         currentUser,
         currentRole: currentUser?.role || null,
         setCurrentUser,
-        loginAs,
         authenticateUser,
         logout,
         products,
@@ -1010,20 +746,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateProduct,
         adjustStock,
         stockMutations,
-        recordStockMutation,
         restockProduct,
         applyStockOpname,
         sellers,
         registerSeller,
         approveSeller,
         rejectSeller,
+        deleteSeller,
         updateSeller,
         invoices,
         createSaleTransaction,
         recordInstallment,
         consignedItems,
         dbConnected,
-        resetToDefaultData,
+        dataReady,
+        dbNoticeMessage,
+        authWarningMessage,
+        clearAuthWarning,
         pendingSellersCount,
         totalReceivablesSummary,
       }}

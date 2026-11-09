@@ -6,11 +6,11 @@ import {
   FileText,
   ExternalLink,
   ClipboardCheck,
+  CheckCircle2,
   AlertTriangle,
   Plus,
   SlidersHorizontal,
   X,
-  CheckCircle2,
   Package,
   Printer,
 } from 'lucide-react';
@@ -33,224 +33,35 @@ export interface StockHistoryItem {
     notes?: string;
     unitPrice?: number;
   }[];
-  auditStatus?: 'Approved' | 'Pending Review' | 'Verified';
 }
 
-// Initial 48 realistic entries, starting with the exact 3 rows requested
-const INITIAL_HISTORY_DATA: StockHistoryItem[] = [
-  {
-    id: 'hist-01',
-    tanggal: '08 Okt 2026',
-    sku: 'TU-CDP-01',
-    namaProduk: 'CD Pria Boxer (Ukuran L)',
-    tipe: 'Barang Masuk',
-    qty: 50,
-    stokAkhir: 93,
-    keterangan: 'Restock dari supplier utama',
-    referenceNumber: 'SJ-KNV-202610-092',
-    partner: 'Konveksi Sentosa Bandung',
-    details: [
-      { item: 'CD Pria Boxer Seamless Bamboo (L)', qty: 50, unitPrice: 16500, notes: 'Kualitas A, jahitan rapi' },
-    ],
-    auditStatus: 'Verified',
-  },
-  {
-    id: 'hist-02',
-    tanggal: '07 Okt 2026',
-    sku: 'TU-CDW-03',
-    namaProduk: 'CD Wanita High-Waist (Ukuran M)',
-    tipe: 'Barang Keluar',
-    qty: -5,
-    stokAkhir: 12,
-    keterangan: 'Penjualan Kasir #INV-0087',
-    referenceNumber: '#INV-0087',
-    partner: 'Kasir Siti Nurhaliza (POS Shift Pagi)',
-    details: [
-      { item: 'CD Wanita High-Waist Tummy Control (M)', qty: 5, unitPrice: 35000, notes: 'Pembayaran Tunai Lunas' },
-    ],
-    auditStatus: 'Approved',
-  },
-  {
-    id: 'hist-03',
-    tanggal: '05 Okt 2026',
-    sku: 'TU-CDA-01',
-    namaProduk: 'CD Anak Laki (Ukuran S)',
-    tipe: 'Opname / Return',
-    qty: -2,
-    stokAkhir: 24,
-    keterangan: 'Barang cacat, disisihkan',
-    referenceNumber: 'BA-OPN-202610-05',
-    partner: 'Audit Opname Fisik Gudang (Pak Tino)',
-    details: [
-      { item: 'CD Anak Laki-Laki Motif Kartun (S)', qty: 2, notes: 'Karet pinggang kendur, reject produksi' },
-    ],
-    auditStatus: 'Approved',
-  },
-  // Additional realistic entries to fulfill the 48 total items
-  {
-    id: 'hist-04',
-    tanggal: '04 Okt 2026',
-    sku: 'TU-CDP-02',
-    namaProduk: 'CD Pria Brief Sporty Katun',
-    tipe: 'Barang Masuk',
-    qty: 35,
-    stokAkhir: 45,
-    keterangan: 'Restock batch mingguan supplier',
-    referenceNumber: 'SJ-KNV-202610-081',
-    partner: 'CV Rajut Sejahtera Solo',
-    details: [{ item: 'CD Pria Brief Katun Sporty', qty: 35, unitPrice: 34000 }],
-    auditStatus: 'Verified',
-  },
-  {
-    id: 'hist-05',
-    tanggal: '04 Okt 2026',
-    sku: 'TU-CDW-01',
-    namaProduk: 'CD Wanita Katun Renda Halus',
-    tipe: 'Barang Keluar',
-    qty: -15,
-    stokAkhir: 35,
-    keterangan: 'Pengiriman Barang Tempo ke Toko Budi Jaya',
-    referenceNumber: 'SJ-MITRA-001',
-    partner: 'Mitra: Budi Santoso (Toko Budi Jaya)',
-    details: [{ item: 'CD Wanita Katun Renda Halus', qty: 15, unitPrice: 22000 }],
-    auditStatus: 'Approved',
-  },
-  {
-    id: 'hist-06',
-    tanggal: '03 Okt 2026',
-    sku: 'TU-CDP-03',
-    namaProduk: 'CD Pria Segitiga Classic',
-    tipe: 'Barang Keluar',
-    qty: -10,
-    stokAkhir: 62,
-    keterangan: 'Penjualan Kasir #INV-0079',
-    referenceNumber: '#INV-0079',
-    partner: 'Kasir Siti Nurhaliza',
-    details: [{ item: 'CD Pria Segitiga Classic', qty: 10, unitPrice: 18000 }],
-    auditStatus: 'Approved',
-  },
-  {
-    id: 'hist-07',
-    tanggal: '02 Okt 2026',
-    sku: 'TU-KOR-01',
-    namaProduk: 'Korset Pelangsing 4-Steel Bone',
-    tipe: 'Barang Masuk',
-    qty: 20,
-    stokAkhir: 22,
-    keterangan: 'Restock kiriman import supplier',
-    referenceNumber: 'SJ-IMP-202610-019',
-    partner: 'Tex Indo Logistics Cikarang',
-    details: [{ item: 'Korset Pelangsing 4-Steel Bone', qty: 20, unitPrice: 52000 }],
-    auditStatus: 'Verified',
-  },
-  {
-    id: 'hist-08',
-    tanggal: '01 Okt 2026',
-    sku: 'TU-CDW-02',
-    namaProduk: 'CD Wanita Seamless Anti-Nyeplak',
-    tipe: 'Opname / Return',
-    qty: -3,
-    stokAkhir: 5,
-    keterangan: 'Koreksi fisik stock opname awal bulan',
-    referenceNumber: 'BA-OPN-202610-01',
-    partner: 'Pak Tino (Owner)',
-    details: [{ item: 'CD Wanita Seamless Anti-Nyeplak', qty: 3, notes: 'Selisih hitung display etalase' }],
-    auditStatus: 'Approved',
-  },
-  {
-    id: 'hist-09',
-    tanggal: '30 Sep 2026',
-    sku: 'TU-CDP-01',
-    namaProduk: 'CD Pria Boxer (Ukuran L)',
-    tipe: 'Barang Keluar',
-    qty: -20,
-    stokAkhir: 43,
-    keterangan: 'Konsinyasi Barang Tempo Grosir Maryam',
-    referenceNumber: 'SJ-MITRA-002',
-    partner: 'Hajjah Maryam (Grosir Maryam)',
-    details: [{ item: 'CD Pria Boxer', qty: 20, unitPrice: 28000 }],
-    auditStatus: 'Approved',
-  },
-  {
-    id: 'hist-10',
-    tanggal: '29 Sep 2026',
-    sku: 'TU-CDA-02',
-    namaProduk: 'CD Anak Perempuan Boxer Renda (Isi 3)',
-    tipe: 'Barang Masuk',
-    qty: 15,
-    stokAkhir: 33,
-    keterangan: 'Restock barang jadi konveksi',
-    referenceNumber: 'SJ-KNV-202609-140',
-    partner: 'Konveksi Sentosa Bandung',
-    details: [{ item: 'CD Anak Perempuan Boxer Renda (Isi 3)', qty: 15, unitPrice: 24000 }],
-    auditStatus: 'Verified',
-  },
-  // Auto-generate further entries up to 48
-  ...Array.from({ length: 38 }, (_, index) => {
-    const day = (28 - (index % 25)).toString().padStart(2, '0');
-    const types: ('Barang Masuk' | 'Barang Keluar' | 'Opname / Return')[] = [
-      'Barang Masuk',
-      'Barang Keluar',
-      'Barang Keluar',
-      'Opname / Return',
-    ];
-    const pickedType = types[index % types.length];
-    const skus = ['TU-CDP-01', 'TU-CDP-02', 'TU-CDW-01', 'TU-CDW-02', 'TU-CDA-01', 'TU-KOR-01'];
-    const names = [
-      'CD Pria Boxer Seamless',
-      'CD Pria Brief Sporty',
-      'CD Wanita Katun Renda',
-      'CD Wanita Seamless Mid-Waist',
-      'CD Anak Laki Katun',
-      'Korset Pelangsing 4-Bone',
-    ];
-    const itemIndex = index % skus.length;
-    const qtyVal = pickedType === 'Barang Masuk' ? 10 + (index % 5) * 5 : -(2 + (index % 4) * 2);
-
-    return {
-      id: `hist-gen-${index + 11}`,
-      tanggal: `${day} Sep 2026`,
-      sku: skus[itemIndex],
-      namaProduk: names[itemIndex],
-      tipe: pickedType,
-      qty: qtyVal,
-      stokAkhir: 20 + ((index * 7) % 65),
-      keterangan:
-        pickedType === 'Barang Masuk'
-          ? `Penerimaan restok surat jalan #SJ-202609-${100 + index}`
-          : pickedType === 'Barang Keluar'
-          ? `Penjualan Kasir POS #INV-202609-${200 + index}`
-          : `Penyesuaian audit opname fisik rak gudang`,
-      referenceNumber:
-        pickedType === 'Barang Masuk'
-          ? `SJ-202609-${100 + index}`
-          : pickedType === 'Barang Keluar'
-          ? `#INV-00${index + 10}`
-          : `BA-OPN-202609-${index + 1}`,
-      partner:
-        pickedType === 'Barang Masuk'
-          ? 'Konveksi Sentosa'
-          : pickedType === 'Barang Keluar'
-          ? 'Kasir Siti'
-          : 'Pak Tino (Owner)',
-      auditStatus: 'Approved' as const,
-    };
-  }),
-];
-
 export const StockControl: React.FC = () => {
-  const { products, adjustStock, restockProduct } = useApp();
+  const { products, adjustStock, restockProduct, stockMutations } = useApp();
 
-  // History dataset state
-  const [historyData, setHistoryData] = useState<StockHistoryItem[]>(INITIAL_HISTORY_DATA);
+  const historyData = useMemo<StockHistoryItem[]>(() => stockMutations.map((mutation) => ({
+    id: mutation.id,
+    tanggal: new Date(mutation.date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }),
+    sku: mutation.productSku,
+    namaProduk: mutation.productName,
+    tipe: mutation.type === 'RESTOCK' ? 'Barang Masuk' : (mutation.type === 'PENJUALAN' || mutation.type === 'KONSINYASI_KELUAR' ? 'Barang Keluar' : 'Opname / Return'),
+    qty: mutation.change,
+    stokAkhir: mutation.finalStock,
+    keterangan: mutation.notes || mutation.type,
+    referenceNumber: mutation.reference,
+    partner: mutation.performedBy,
+  })), [stockMutations]);
+  const totalIncoming = stockMutations.filter((item) => item.change > 0).reduce((sum, item) => sum + item.change, 0);
+  const totalOutgoing = stockMutations.filter((item) => item.change < 0).reduce((sum, item) => sum + item.change, 0);
+  const lowStockCount = products.filter((product) => product.stock <= product.minStock).length;
+  const lastOpname = stockMutations.find((item) => item.type === 'OPNAME_KOREKSI' || item.type === 'RUSAK_REJECT');
 
   // Filter state
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('Semua Pergerakan');
 
-  // Pagination state: default 3 items per page so the 3 requested items show on page 1, with 16 pages = 48 entries total!
+  // Pagination state based on the actual number of stock movement records.
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 3;
+  const itemsPerPage = 10;
 
   // Selected Action Modal states
   const [selectedIncomingModal, setSelectedIncomingModal] = useState<StockHistoryItem | null>(null);
@@ -262,17 +73,17 @@ export const StockControl: React.FC = () => {
   const [isAdjustModalOpen, setIsAdjustModalOpen] = useState(false);
 
   // Form states for "+ Catat Barang Masuk"
-  const [formSku, setFormSku] = useState('TU-CDP-01');
-  const [formQty, setFormQty] = useState(50);
-  const [formSupplier, setFormSupplier] = useState('Konveksi Sentosa Bandung');
+  const [formSku, setFormSku] = useState('');
+  const [formQty, setFormQty] = useState(1);
+  const [formSupplier, setFormSupplier] = useState('');
   const [formReference, setFormReference] = useState('');
   const [formNotes, setFormNotes] = useState('');
 
   // Form states for "Penyesuaian Manual"
-  const [adjSku, setAdjSku] = useState('TU-CDP-01');
+  const [adjSku, setAdjSku] = useState('');
   const [adjType, setAdjType] = useState<'Kurang' | 'Tambah'>('Kurang');
-  const [adjQty, setAdjQty] = useState(2);
-  const [adjReason, setAdjReason] = useState('Barang cacat produksi, disisihkan');
+  const [adjQty, setAdjQty] = useState(1);
+  const [adjReason, setAdjReason] = useState('');
 
   // Filtered History
   const filteredData = useMemo(() => {
@@ -298,36 +109,11 @@ export const StockControl: React.FC = () => {
   const currentEntries = filteredData.slice(startIndex, startIndex + itemsPerPage);
 
   // Handle "+ Catat Barang Masuk" submit
-  const handleCatatBarangMasuk = (e: React.FormEvent) => {
+  const handleCatatBarangMasuk = async (e: React.FormEvent) => {
     e.preventDefault();
-    const targetProduct = products.find((p) => p.sku === formSku) || products[0];
-    const newStock = (targetProduct?.stock || 45) + formQty;
-
-    const todayStr = new Date().toLocaleDateString('id-ID', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    });
-
-    const newEntry: StockHistoryItem = {
-      id: 'hist-' + Date.now(),
-      tanggal: todayStr,
-      sku: targetProduct?.sku || formSku,
-      namaProduk: targetProduct?.name || 'CD Pria Boxer (Ukuran L)',
-      tipe: 'Barang Masuk',
-      qty: formQty,
-      stokAkhir: newStock,
-      keterangan: formNotes || `Restok dari ${formSupplier}`,
-      referenceNumber: formReference || `SJ-KNV-${Date.now().toString().slice(-4)}`,
-      partner: formSupplier,
-      details: [{ item: targetProduct?.name || formSku, qty: formQty, notes: formNotes }],
-      auditStatus: 'Verified',
-    };
-
-    setHistoryData([newEntry, ...historyData]);
-    if (targetProduct) {
-      restockProduct(targetProduct.id, formQty, formNotes, formSupplier);
-    }
+    const targetProduct = products.find((p) => p.sku === formSku);
+    if (!targetProduct) { window.alert('Pilih SKU produk yang valid terlebih dahulu.'); return; }
+    try { await restockProduct(targetProduct.id, formQty, formNotes, formSupplier, formReference); } catch { return; }
 
     setIsRestockModalOpen(false);
     setFormNotes('');
@@ -335,37 +121,15 @@ export const StockControl: React.FC = () => {
   };
 
   // Handle "Penyesuaian Manual" submit
-  const handlePenyesuaianManual = (e: React.FormEvent) => {
+  const handlePenyesuaianManual = async (e: React.FormEvent) => {
     e.preventDefault();
-    const targetProduct = products.find((p) => p.sku === adjSku) || products[0];
+    const targetProduct = products.find((p) => p.sku === adjSku);
     const change = adjType === 'Tambah' ? adjQty : -adjQty;
-    const newStock = Math.max(0, (targetProduct?.stock || 45) + change);
-
-    const todayStr = new Date().toLocaleDateString('id-ID', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    });
-
-    const newEntry: StockHistoryItem = {
-      id: 'hist-' + Date.now(),
-      tanggal: todayStr,
-      sku: targetProduct?.sku || adjSku,
-      namaProduk: targetProduct?.name || 'CD Pria Boxer',
-      tipe: 'Opname / Return',
-      qty: change,
-      stokAkhir: newStock,
-      keterangan: adjReason || 'Penyesuaian stock opname manual',
-      referenceNumber: `BA-OPN-${Date.now().toString().slice(-4)}`,
-      partner: 'Pak Tino (Owner)',
-      details: [{ item: targetProduct?.name || adjSku, qty: Math.abs(change), notes: adjReason }],
-      auditStatus: 'Approved',
-    };
-
-    setHistoryData([newEntry, ...historyData]);
-    if (targetProduct) {
-      adjustStock(targetProduct.id, newStock, adjReason);
-    }
+    if (!targetProduct) { window.alert('Pilih SKU produk yang valid terlebih dahulu.'); return; }
+    const newStock = targetProduct.stock + change;
+    if (!Number.isInteger(adjQty) || adjQty <= 0 || newStock < 0) { window.alert('Jumlah penyesuaian tidak valid atau menyebabkan stok negatif.'); return; }
+    if (!adjReason.trim()) { window.alert('Alasan penyesuaian stok wajib diisi.'); return; }
+    try { await adjustStock(targetProduct.id, newStock, adjReason); } catch { return; }
 
     setIsAdjustModalOpen(false);
     setAdjReason('');
@@ -404,7 +168,7 @@ export const StockControl: React.FC = () => {
               Kontrol Stok &amp; Histori
             </h1>
             <span className="bg-green-100 text-green-700 font-semibold text-xs px-2 py-0.5 rounded">
-              LIVE AUDIT
+              HISTORI DATABASE
             </span>
           </div>
           <p className="text-xs sm:text-sm text-gray-500 mt-1">
@@ -445,11 +209,11 @@ export const StockControl: React.FC = () => {
               BARANG MASUK
             </span>
             <div className="text-2xl sm:text-3xl font-extrabold text-teal-600 mt-2 font-mono-num">
-              +120 pcs
+              {`+${totalIncoming.toLocaleString('id-ID')} pcs`}
             </div>
           </div>
           <p className="text-xs text-gray-500 mt-2">
-            Peningkatan restock gudang.
+            Akumulasi penambahan stok yang tercatat.
           </p>
         </div>
 
@@ -460,11 +224,11 @@ export const StockControl: React.FC = () => {
               BARANG KELUAR
             </span>
             <div className="text-2xl sm:text-3xl font-extrabold text-amber-600 mt-2 font-mono-num">
-              -85 pcs
+              {`${totalOutgoing.toLocaleString('id-ID')} pcs`}
             </div>
           </div>
           <p className="text-xs text-gray-500 mt-2">
-            Total penjualan &amp; transfer.
+            Akumulasi pengurangan stok yang tercatat.
           </p>
         </div>
 
@@ -478,11 +242,11 @@ export const StockControl: React.FC = () => {
               <AlertTriangle className="w-4 h-4 text-red-500" />
             </div>
             <div className="text-2xl sm:text-3xl font-extrabold text-red-600 mt-2 font-mono-num">
-              4 SKU
+              {`${lowStockCount} SKU`}
             </div>
           </div>
           <p className="text-xs text-gray-500 mt-2">
-            Perlu pengadaan segera.
+            Produk di bawah atau sama dengan batas minimum stok.
           </p>
         </div>
 
@@ -493,11 +257,11 @@ export const StockControl: React.FC = () => {
               OPNAME TERAKHIR
             </span>
             <div className="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-2">
-              2 Hari Lalu
+              {lastOpname ? new Date(lastOpname.date).toLocaleDateString('id-ID') : 'Belum ada'}
             </div>
           </div>
           <p className="text-xs text-gray-500 mt-2">
-            Selisih 2 item dicatat.
+            Tanggal koreksi stok terakhir di database.
           </p>
         </div>
       </div>
@@ -700,7 +464,7 @@ export const StockControl: React.FC = () => {
             Menampilkan {currentEntries.length} dari {totalEntries} entri pergerakan stok
           </div>
 
-          {/* Komponen Pagination: "Sebelumnya", "1", "2", "3", "...", "16", "Berikutnya" */}
+          {/* Pagination dinamis berdasarkan jumlah histori sebenarnya */}
           <div className="flex items-center gap-1 font-medium">
             <button
               type="button"
@@ -715,60 +479,20 @@ export const StockControl: React.FC = () => {
               Sebelumnya
             </button>
 
-            {/* Page 1 (Aktif hijau/teal jika di page 1) */}
-            <button
-              type="button"
-              onClick={() => setCurrentPage(1)}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
-                validCurrentPage === 1
-                  ? 'bg-teal-600 text-white shadow-xs'
-                  : 'text-gray-700 hover:bg-gray-100 border border-gray-300'
-              }`}
-            >
-              1
-            </button>
-
-            {/* Page 2 */}
-            <button
-              type="button"
-              onClick={() => setCurrentPage(2)}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
-                validCurrentPage === 2
-                  ? 'bg-teal-600 text-white shadow-xs'
-                  : 'text-gray-700 hover:bg-gray-100 border border-gray-300'
-              }`}
-            >
-              2
-            </button>
-
-            {/* Page 3 */}
-            <button
-              type="button"
-              onClick={() => setCurrentPage(3)}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
-                validCurrentPage === 3
-                  ? 'bg-teal-600 text-white shadow-xs'
-                  : 'text-gray-700 hover:bg-gray-100 border border-gray-300'
-              }`}
-            >
-              3
-            </button>
-
-            {/* Ellipsis "..." */}
-            <span className="px-2 py-1 text-gray-400 text-xs">...</span>
-
-            {/* Page 16 */}
-            <button
-              type="button"
-              onClick={() => setCurrentPage(16)}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
-                validCurrentPage === 16
-                  ? 'bg-teal-600 text-white shadow-xs'
-                  : 'text-gray-700 hover:bg-gray-100 border border-gray-300'
-              }`}
-            >
-              16
-            </button>
+            {Array.from({ length: totalPages }, (_, index) => index + 1)
+              .filter((page) => page === 1 || page === totalPages || Math.abs(page - validCurrentPage) <= 1)
+              .map((page, index, visiblePages) => (
+                <React.Fragment key={page}>
+                  {index > 0 && page - visiblePages[index - 1] > 1 && <span className="px-1 text-gray-400">…</span>}
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage(page)}
+                    className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
+                      validCurrentPage === page ? 'bg-teal-600 text-white shadow-xs' : 'text-gray-700 hover:bg-gray-100 border border-gray-300'
+                    }`}
+                  >{page}</button>
+                </React.Fragment>
+              ))}
 
             {/* Berikutnya */}
             <button
@@ -796,10 +520,10 @@ export const StockControl: React.FC = () => {
                 <FileText className="w-5 h-5 text-teal-700" />
                 <div>
                   <h3 className="font-bold text-sm text-gray-900">
-                    Detail Surat Jalan &amp; Faktur Pembelian
+                    Detail Barang Masuk
                   </h3>
                   <p className="text-[11px] text-teal-800 font-mono-num font-semibold">
-                    {selectedIncomingModal.referenceNumber || 'SJ-KNV-202610-092'}
+                    {selectedIncomingModal.referenceNumber || '—'}
                   </p>
                 </div>
               </div>
@@ -819,18 +543,16 @@ export const StockControl: React.FC = () => {
                   <span className="font-bold text-gray-900">{selectedIncomingModal.tanggal}</span>
                 </div>
                 <div>
-                  <span className="text-gray-400 block text-[10px] uppercase font-semibold">SUPPLIER / KONVEKSI</span>
-                  <span className="font-bold text-teal-800">{selectedIncomingModal.partner || 'Konveksi Sentosa'}</span>
+                  <span className="text-gray-400 block text-[10px] uppercase font-semibold">PENANGGUNG JAWAB</span>
+                  <span className="font-bold text-teal-800">{selectedIncomingModal.partner || '—'}</span>
                 </div>
                 <div>
                   <span className="text-gray-400 block text-[10px] uppercase font-semibold">STATUS VERIFIKASI</span>
-                  <span className="inline-flex items-center gap-1 font-semibold text-emerald-700">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> Telah Diverifikasi Gudang
-                  </span>
+                  <span className="font-semibold text-gray-700">Tercatat pada histori mutasi stok</span>
                 </div>
                 <div>
-                  <span className="text-gray-400 block text-[10px] uppercase font-semibold">PENERIMA FISIK</span>
-                  <span className="font-medium text-gray-800">Pak Tino (Owner)</span>
+                  <span className="text-gray-400 block text-[10px] uppercase font-semibold">KETERANGAN PENCATATAN</span>
+                  <span className="font-medium text-gray-800">—</span>
                 </div>
               </div>
 
@@ -865,7 +587,7 @@ export const StockControl: React.FC = () => {
               </div>
 
               <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                <span className="text-[11px] text-gray-500 font-semibold block">Catatan Surat Jalan:</span>
+                <span className="text-[11px] text-gray-500 font-semibold block">Catatan mutasi:</span>
                 <p className="text-xs text-gray-800 mt-0.5">{selectedIncomingModal.keterangan}</p>
               </div>
 
@@ -879,10 +601,7 @@ export const StockControl: React.FC = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    alert('Dokumen Surat Jalan telah dicetak.');
-                    setSelectedIncomingModal(null);
-                  }}
+                  onClick={() => window.print()}
                   className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-lg text-xs flex items-center gap-1.5"
                 >
                   <Printer className="w-3.5 h-3.5" />
@@ -903,10 +622,10 @@ export const StockControl: React.FC = () => {
                 <ExternalLink className="w-5 h-5 text-amber-700" />
                 <div>
                   <h3 className="font-bold text-sm text-gray-900">
-                    Struk Penjualan Kasir POS / Track Pengiriman
+                    Detail Barang Keluar
                   </h3>
                   <p className="text-[11px] text-amber-800 font-mono-num font-semibold">
-                    {selectedOutgoingModal.referenceNumber || '#INV-0087'}
+                    {selectedOutgoingModal.referenceNumber || '—'}
                   </p>
                 </div>
               </div>
@@ -927,13 +646,11 @@ export const StockControl: React.FC = () => {
                 </div>
                 <div>
                   <span className="text-gray-400 block text-[10px] uppercase font-semibold">KASIR / TUJUAN</span>
-                  <span className="font-bold text-gray-900">{selectedOutgoingModal.partner || 'Kasir Toko'}</span>
+                  <span className="font-bold text-gray-900">{selectedOutgoingModal.partner || '—'}</span>
                 </div>
                 <div>
-                  <span className="text-gray-400 block text-[10px] uppercase font-semibold">STATUS TRACKING</span>
-                  <span className="inline-flex items-center gap-1 font-semibold text-emerald-700">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> Selesai / Diserahkan
-                  </span>
+                  <span className="text-gray-400 block text-[10px] uppercase font-semibold">STATUS PENCATATAN</span>
+                  <span className="font-semibold text-gray-700">Tercatat pada histori mutasi stok</span>
                 </div>
                 <div>
                   <span className="text-gray-400 block text-[10px] uppercase font-semibold">SALDO STOK SETELAH KELUAR</span>
@@ -999,10 +716,10 @@ export const StockControl: React.FC = () => {
                 <ClipboardCheck className="w-5 h-5 text-purple-700" />
                 <div>
                   <h3 className="font-bold text-sm text-gray-900">
-                    Berita Acara &amp; Audit Penyesuaian Opname
+                    Detail Penyesuaian Stok
                   </h3>
                   <p className="text-[11px] text-purple-800 font-mono-num font-semibold">
-                    {selectedOpnameModal.referenceNumber || 'BA-OPN-202610-05'}
+                    {selectedOpnameModal.referenceNumber || '—'}
                   </p>
                 </div>
               </div>
@@ -1023,13 +740,11 @@ export const StockControl: React.FC = () => {
                 </div>
                 <div>
                   <span className="text-gray-400 block text-[10px] uppercase font-semibold">AUDITOR / PETUGAS</span>
-                  <span className="font-bold text-purple-900">{selectedOpnameModal.partner || 'Pak Tino (Owner)'}</span>
+                  <span className="font-bold text-purple-900">{selectedOpnameModal.partner || '—'}</span>
                 </div>
                 <div>
-                  <span className="text-gray-400 block text-[10px] uppercase font-semibold">STATUS APPROVAL OWNER</span>
-                  <span className="inline-flex items-center gap-1 font-semibold text-purple-800">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> Disetujui (Approved)
-                  </span>
+                  <span className="text-gray-400 block text-[10px] uppercase font-semibold">STATUS PENCATATAN</span>
+                  <span className="font-semibold text-gray-700">Tercatat pada histori mutasi stok</span>
                 </div>
                 <div>
                   <span className="text-gray-400 block text-[10px] uppercase font-semibold">STOK FISIK AKHIR</span>
@@ -1059,17 +774,7 @@ export const StockControl: React.FC = () => {
                 >
                   Tutup
                 </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    alert('Berita Acara Opname telah disetujui & diverifikasi oleh Owner.');
-                    setSelectedOpnameModal(null);
-                  }}
-                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg text-xs flex items-center gap-1.5"
-                >
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  Approve Berita Acara
-                </button>
+
               </div>
             </div>
           </div>
@@ -1106,6 +811,7 @@ export const StockControl: React.FC = () => {
                   onChange={(e) => setFormSku(e.target.value)}
                   className="w-full p-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:border-teal-600 text-gray-900"
                 >
+                  <option value="">Pilih produk</option>
                   {products.map((p) => (
                     <option key={p.id} value={p.sku}>
                       {p.sku} - {p.name} (Stok: {p.stock} pcs)
