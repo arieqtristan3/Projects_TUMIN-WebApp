@@ -1,3 +1,4 @@
+
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
@@ -8,6 +9,9 @@ export default defineConfig({
   resolve: {
     alias: { '@': path.resolve(import.meta.dirname, '.') },
   },
-  server: { host: '0.0.0.0' },
+  server: {
+    host: '0.0.0.0',
+    allowedHosts: ['tumin-sys.up.railway.app'],
+  },
   preview: { host: '0.0.0.0' },
 });
